@@ -1,252 +1,133 @@
-# MoMask: Generative Masked Modeling of 3D Human Motions (CVPR 2024)
-### [[Project Page]](https://ericguo5513.github.io/momask) [[Paper]](https://arxiv.org/abs/2312.00063) [[Huggingface Demo]](https://huggingface.co/spaces/MeYourHint/MoMask) [[Colab Demo]](https://github.com/camenduru/MoMask-colab)
-![teaser_image](https://ericguo5513.github.io/momask/static/images/teaser.png)
+# Segmo
 
-If you find our code or paper helpful, please consider starring our repository and citing:
-```
-@inproceedings{guo2024momask,
-  title={Momask: Generative masked modeling of 3d human motions},
-  author={Guo, Chuan and Mu, Yuxuan and Javed, Muhammad Gohar and Wang, Sen and Cheng, Li},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={1900--1910},
-  year={2024}
-}
-```
+MoMask(CVPR 2024) 기반으로 SegMo(arxiv 2512.21237) 논문의 아이디어를 구현한 프로젝트.
 
-## :postbox: News
-📢 **2024-08-02** --- The [WebUI demo 🤗](https://huggingface.co/spaces/MeYourHint/MoMask) is now running smoothly on a CPU. No GPU is required to use MoMask.
+전체 텍스트 캡션뿐만 아니라 **구간별로 분할된 텍스트(segmented caption)** 를 MaskTransformer에 함께 입력하고, 모션 구간과 텍스트 구간을 매칭하여 세밀한 생성 제어와 loss 가중치 조정을 목표로 한다.
 
-📢 **2024-02-26** --- 🔥🔥🔥 Congrats! MoMask is accepted to CVPR 2024.
+---
 
-📢 **2024-01-12** --- Now you can use MoMask in Blender as an add-on. Thanks to [@makeinufilm](https://twitter.com/makeinufilm) for sharing the [tutorial](https://medium.com/@makeinufilm/notes-on-how-to-set-up-the-momask-environment-and-how-to-use-blenderaddon-6563f1abdbfa).
+## 기반 코드
 
-📢 **2023-12-30** --- For easy WebUI BVH visulization, you could try this website [bvh2vrma](https://vrm-c.github.io/bvh2vrma/) from this [github](https://github.com/vrm-c/bvh2vrma?tab=readme-ov-file).
+- **MoMask** (CVPR 2024): https://arxiv.org/abs/2312.00063
+- **SegMo** (참고 논문): https://arxiv.org/pdf/2512.21237
 
-📢 **2023-12-29** --- Thanks to Camenduru for supporting the [🤗Colab](https://github.com/camenduru/MoMask-colab) demo.
+---
 
-📢 **2023-12-27** --- Release WebUI demo. Try now on [🤗HuggingFace](https://huggingface.co/spaces/MeYourHint/MoMask)!
-
-📢 **2023-12-19** --- Release scripts for temporal inpainting.
-
-📢 **2023-12-15** --- Release codes and models for momask. Including training/eval/generation scripts.
-
-📢 **2023-11-29** --- Initialized the webpage and git project.  
-
-
-## :round_pushpin: Get You Ready
-
-<details>
-  
-### 1. Conda Environment
-```
-conda env create -f environment.yml
-conda activate momask
-pip install git+https://github.com/openai/CLIP.git
-```
-We test our code on Python 3.7.13 and PyTorch 1.7.1
-
-#### Alternative: Pip Installation
-<details>
-We provide an alternative pip installation in case you encounter difficulties setting up the conda environment.
+## 폴더 구조
 
 ```
-pip install -r requirements.txt
-```
-We test this installation on Python 3.10
-
-</details>
-
-### 2. Models and Dependencies
-
-#### Download Pre-trained Models
-```
-bash prepare/download_models.sh
-```
-
-#### Download Evaluation Models and Gloves
-For evaluation only.
-```
-bash prepare/download_evaluator.sh
-bash prepare/download_glove.sh
-```
-
-#### Troubleshooting
-To address the download error related to gdown: "Cannot retrieve the public link of the file. You may need to change the permission to 'Anyone with the link', or have had many accesses". A potential solution is to run `pip install --upgrade --no-cache-dir gdown`, as suggested on https://github.com/wkentaro/gdown/issues/43. This should help resolve the issue.
-
-#### (Optional) Download Manually
-Visit [[Google Drive]](https://drive.google.com/drive/folders/1sHajltuE2xgHh91H9pFpMAYAkHaX9o57?usp=drive_link) to download the models and evaluators mannually.
-
-### 3. Get Data
-
-You have two options here:
-* **Skip getting data**, if you just want to generate motions using *own* descriptions.
-* **Get full data**, if you want to *re-train* and *evaluate* the model.
-
-**(a). Full data (text + motion)**
-
-**HumanML3D** - Follow the instruction in [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git), then copy the result dataset to our repository:
-```
-cp -r ../HumanML3D/HumanML3D ./dataset/HumanML3D
-```
-**KIT**-Download from [HumanML3D](https://github.com/EricGuo5513/HumanML3D.git), then place result in `./dataset/KIT-ML`
-
-#### 
-
-</details>
-
-## :rocket: Demo
-<details>
-
-### (a) Generate from a single prompt
-```
-python gen_t2m.py --gpu_id 1 --ext exp1 --text_prompt "A person is running on a treadmill."
-```
-### (b) Generate from a prompt file
-An example of prompt file is given in `./assets/text_prompt.txt`. Please follow the format of `<text description>#<motion length>` at each line. Motion length indicates the number of poses, which must be integeter and will be rounded by 4. In our work, motion is in 20 fps.
-
-If you write `<text description>#NA`, our model will determine a length. Note once there is **one** NA, all the others will be **NA** automatically.
-
-```
-python gen_t2m.py --gpu_id 1 --ext exp2 --text_path ./assets/text_prompt.txt
+Segmo/
+├── data/
+│   └── t2m_dataset.py          # Dataset 및 DataLoader 정의
+├── models/
+│   ├── mask_transformer/
+│   │   ├── transformer.py      # MaskTransformer 모델 핵심
+│   │   ├── transformer_trainer.py
+│   │   └── tools.py
+│   └── vq/                     # VQ-VAE 관련 모델
+├── run/                        # 학습/평가/생성 실행 스크립트
+├── options/                    # 학습 옵션 정의
+├── utils/                      # 평가 지표, 유틸리티
+├── motion_loaders/             # 생성된 모션 로딩
+├── common/                     # 쿼터니언 등 공통 수학 모듈
+├── visualization/              # 모션 시각화
+├── glove/                      # GloVe 워드 임베딩
+├── checkpoints/                # 저장된 모델 가중치
+└── etc/                        # 환경 설정, 라이선스, 원본 README
 ```
 
+---
 
-A few more parameters you may be interested:
-* `--repeat_times`: number of replications for generation, default `1`.
-* `--motion_length`: specify the number of poses for generation, only applicable in (a).
+## 데이터
 
-The output files are stored under folder `./generation/<ext>/`. They are
-* `numpy files`: generated motions with shape of (nframe, 22, 3), under subfolder `./joints`.
-* `video files`: stick figure animation in mp4 format, under subfolder `./animation`.
-* `bvh files`: bvh files of the generated motion, under subfolder `./animation`.
+- **HumanML3D** 기반 학습
+- Segmented Caption 경로: `/data4/local_datasets/HumanML3D/SegmentedCaption/`
+  - **JSONL** (`train.jsonl`): 전체 train 데이터를 한 파일에 저장. 모션 ID 기준으로 접근
+    ```json
+    {"id": "000001", "split": "train", "captions": [
+        {"caption": "...", "segments": ["t1", "t2", "t3"], "n_segments": 3},
+        {"caption": "...", "segments": ["t1", "t2"], "n_segments": 2}
+    ]}
+    ```
+  - **개별 txt** (`{motionID}_{i}.txt`): caption별 segments를 HumanML3D 포맷으로 저장 (**1-indexed**, i=1부터 시작)
+    - `000001_1.txt` → 첫번째 caption의 segments
+    - `000001_2.txt` → 두번째 caption의 segments
+  - **구현에서는 JSONL 사용** (txt는 참고용)
+    - `seg_dict[motionID][line_idx]` 로 접근 (`line_idx`는 0-indexed)
+    - txt 파일 직접 접근 시 주의: `line_idx=0` → `{id}_1.txt` (1-indexed offset 필요)
 
-We also apply naive foot ik to the generated motions, see files with suffix `_ik`. It sometimes works well, but sometimes will fail.
-  
-</details>
+---
 
-## :dancers: Visualization
-<details>
+## 구현 계획
 
-All the animations are manually rendered in blender. We use the characters from [mixamo](https://www.mixamo.com/#/). You need to download the characters in T-Pose with skeleton.
+### Stage 1: MaskTransformer에 Segmented Caption 입력 추가
 
-### Retargeting
-For retargeting, we found rokoko usually leads to large error on foot. On the other hand, [keemap.rig.transfer](https://github.com/nkeeline/Keemap-Blender-Rig-ReTargeting-Addon/releases) shows more precise retargetting. You could watch the [tutorial](https://www.youtube.com/watch?v=EG-VCMkVpxg) here.
-
-Following these steps:
-* Download keemap.rig.transfer from the github, and install it in blender.
-* Import both the motion files (.bvh) and character files (.fbx) in blender.
-* `Shift + Select` the both source and target skeleton. (Do not need to be Rest Position)
-* Switch to `Pose Mode`, then unfold the `KeeMapRig` tool at the top-right corner of the view window.
-* For `bone mapping file`, direct to `./assets/mapping.json`(or `mapping6.json` if it doesn't work), and click `Read In Bone Mapping File`. This file is manually made by us. It works for most characters in mixamo.
-* (Optional) You could manually fill in the bone mapping and adjust the rotations by your own, for your own character. `Save Bone Mapping File` can save the mapping configuration in local file, as specified by the mapping file path.
-* Adjust the `Number of Samples`, `Source Rig`, `Destination Rig Name`.
-* Clik `Transfer Animation from Source Destination`, wait a few seconds.
-
-We didn't tried other retargetting tools. Welcome to comment if you find others are more useful.
-
-### Scene
-
-We use this [scene](https://drive.google.com/file/d/16SbrnG9JsJ2w7UwCFmh10PcBdl6HxlrA/view?usp=drive_link) for animation.
-
-
-</details>
-
-## :clapper: Temporal Inpainting
-<details>
-We conduct mask-based editing in the m-transformer stage, followed by the regeneration of residual tokens for the entire sequence. To load your own motion, provide the path through `--source_motion`. Utilize `-msec` to specify the mask section, supporting either ratio or frame index. For instance, `-msec 0.3,0.6` with `max_motion_length=196` is equivalent to `-msec 59,118`, indicating the editing of the frame section [59, 118]. 
-
+**현재 구조:**
 ```
-python edit_t2m.py --gpu_id 1 --ext exp3 --use_res_model -msec 0.4,0.7 --text_prompt "A man picks something from the ground using his right hand."
+[MASK된 모션 토큰들] + [전체 텍스트 condition 토큰 1개]
 ```
 
-Note: Presently, the source motion must adhere to the format of a HumanML3D dim-263 feature vector. An example motion vector data from the HumanML3D test set is available in `example_data/000612.npy`. To process your own motion data, you can utilize the `process_file` function from `utils/motion_process.py`.
-
-</details>
-
-## :space_invader: Train Your Own Models
-<details>
-
-
-**Note**: You have to train RVQ **BEFORE** training masked/residual transformers. The latter two can be trained simultaneously.
-
-### Train RVQ
-You may also need to download evaluation models to run the scripts.
+**변경 구조:**
 ```
-python train_vq.py --name rvq_name --gpu_id 1 --dataset_name t2m --batch_size 256 --num_quantizers 6  --max_epoch 50 --quantize_dropout_prob 0.2 --gamma 0.05
+[MASK된 모션 토큰들] + [전체 텍스트 토큰] + [t1 토큰] + [t2 토큰] + ... + [tN 토큰]
 ```
 
-### Train Masked Transformer
-```
-python train_t2m_transformer.py --name mtrans_name --gpu_id 2 --dataset_name t2m --batch_size 64 --vq_name rvq_name
-```
+**구현 내용:**
 
-### Train Residual Transformer
-```
-python train_res_transformer.py --name rtrans_name  --gpu_id 2 --dataset_name t2m --batch_size 64 --vq_name rvq_name --cond_drop_prob 0.2 --share_weight
-```
+1. **`data/t2m_dataset.py`**
+   - `__init__`: `seg_dir` 파라미터 추가, init 시 `train.jsonl` 한 번만 로드해 `seg_dict` 구성
+   - `__init__` 루프: `line_idx` 추적, `seg_captions` (segments 리스트 또는 None) 를 `data_dict`에 함께 저장
+     - `f_tag == 0.0` 캡션: `data_dict[name]['seg_captions']` 리스트에 append
+     - `f_tag != 0.0` 캡션: `data_dict[new_name]['seg_captions'] = [seg_captions]`
+     - segments가 1개이면 None 저장 (분할 안 된 것으로 간주)
+   - `__getitem__`: `random.choice` → `random.randint`으로 index 추적, `seg_captions` 함께 반환
+   - `train_t2m_transformer.py`의 DataLoader에 `collate_fn` 추가 (seg_captions는 list 그대로 유지)
 
-* `--dataset_name`: motion dataset, `t2m` for HumanML3D and `kit` for KIT-ML.  
-* `--name`: name your model. This will create to model space as `./checkpoints/<dataset_name>/<name>`
-* `--gpu_id`: GPU id.
-* `--batch_size`: we use `512` for rvq training. For masked/residual transformer, we use `64` on HumanML3D and `16` for KIT-ML.
-* `--num_quantizers`: number of quantization layers, `6` is used in our case.
-* `--quantize_drop_prob`: quantization dropout ratio, `0.2` is used.
-* `--vq_name`: when training masked/residual transformer, you need to specify the name of rvq model for tokenization.
-* `--cond_drop_prob`: condition drop ratio, for classifier-free guidance. `0.2` is used.
-* `--share_weight`: whether to share the projection/embedding weights in residual transformer.
+2. **`models/mask_transformer/transformer.py`**
+   - `trans_forward()`: `cond` 단일 벡터 → 복수 condition 벡터 처리로 확장
+   - 각 segment 텍스트를 `encode_text()`로 CLIP 임베딩
+   - 동일한 `cond_emb` (Linear layer) 를 공유하여 각 벡터를 latent_dim으로 projection
+   - condition 토큰들을 sequence 앞에 개별 토큰으로 추가:
+     ```python
+     # (1 + N_seg, b, latent_dim) → sequence 앞에 prepend
+     cond_tokens = torch.stack([full_token, t1_token, t2_token, ...], dim=0)
+     xseq = torch.cat([cond_tokens, x], dim=0)
+     ```
+   - `padding_mask`도 condition 토큰 수만큼 앞에 확장
 
-All the pre-trained models and intermediate results will be saved in space `./checkpoints/<dataset_name>/<name>`.
-</details>
+**설계 결정:**
+- Segment condition 토큰에는 별도 positional encoding 추가하지 않음 (논문 따름)
+- 같은 `cond_emb` layer를 전체 텍스트 및 모든 segment에 공유 사용
+- Transformer self-attention이 모션 토큰 위치에 따라 적절한 segment 토큰에 attention하도록 학습에 맡김
 
-## :book: Evaluation
-<details>
+**알려진 한계 / 추후 개선 사항:**
+- 배치 내 샘플마다 segment 수가 다를 때, segment가 없는 자리는 0벡터로 채워서 condition 토큰으로 넣음
+  - `Linear(0벡터) = bias`이므로 완전한 0이 아니고 noise로 작용할 수 있음
+  - 추후 개선: invalid segment 위치에 attention mask를 추가하여 transformer가 해당 토큰을 무시하도록 처리
 
-### Evaluate RVQ Reconstruction:
-HumanML3D:
-```
-python eval_t2m_vq.py --gpu_id 0 --name rvq_nq6_dc512_nc512_noshare_qdp0.2 --dataset_name t2m --ext rvq_nq6
+---
 
-```
-KIT-ML:
-```
-python eval_t2m_vq.py --gpu_id 0 --name rvq_nq6_dc512_nc512_noshare_qdp0.2_k --dataset_name kit --ext rvq_nq6
-```
+### Stage 2: Motion Segment Aggregation
 
-### Evaluate Text2motion Generation:
-HumanML3D:
-```
-python eval_t2m_trans_res.py --res_name tres_nlayer8_ld384_ff1024_rvq6ns_cdp0.2_sw --dataset_name t2m --name t2m_nlayer8_nhead6_ld384_ff1024_cdp0.1_rvq6ns --gpu_id 1 --cond_scale 4 --time_steps 10 --ext evaluation
-```
-KIT-ML:
-```
-python eval_t2m_trans_res.py --res_name tres_nlayer8_ld384_ff1024_rvq6ns_cdp0.2_sw_k --dataset_name kit --name t2m_nlayer8_nhead6_ld384_ff1024_cdp0.1_rvq6ns_k --gpu_id 0 --cond_scale 2 --time_steps 10 --ext evaluation
-```
+- 모션 프레임을 segment 수(N)로 **균등 분할**
+  - 예: 모션 길이 90프레임, segment 3개 → [0:30], [30:60], [60:90]
+- 각 구간의 모션 토큰과 대응하는 segment 텍스트를 매핑
+- VQ-VAE로 인코딩된 모션 코드 레벨에서 구간 매핑 처리
 
-* `--res_name`: model name of `residual transformer`.  
-* `--name`: model name of `masked transformer`.  
-* `--cond_scale`: scale of classifer-free guidance.
-* `--time_steps`: number of iterations for inference.
-* `--ext`: filename for saving evaluation results.
-* `--which_epoch`: checkpoint name of `masked transformer`.
+---
 
-The final evaluation results will be saved in `./checkpoints/<dataset_name>/<name>/eval/<ext>.log`
+### Stage 3: Segmented Loss 구현
 
-</details>
+- 모션 구간별로 대응하는 segment caption의 의미적 정합성에 따라 **loss 가중치 조정**
+- 전체 텍스트 condition loss + segment별 추가 loss term
+- SegMo 논문의 loss 설계 참조
 
-## Acknowlegements
+---
 
-We sincerely thank the open-sourcing of these works where our code is based on: 
+## 현재 진행 상황
 
-[deep-motion-editing](https://github.com/DeepMotionEditing/deep-motion-editing), [Muse](https://github.com/lucidrains/muse-maskgit-pytorch), [vector-quantize-pytorch](https://github.com/lucidrains/vector-quantize-pytorch), [T2M-GPT](https://github.com/Mael-zys/T2M-GPT), [MDM](https://github.com/GuyTevet/motion-diffusion-model/tree/main) and [MLD](https://github.com/ChenFengYe/motion-latent-diffusion/tree/main)
-
-## License
-This code is distributed under an [MIT LICENSE](https://github.com/EricGuo5513/momask-codes/tree/main?tab=MIT-1-ov-file#readme).
-
-Note that our code depends on other libraries, including SMPL, SMPL-X, PyTorch3D, and uses datasets which each have their own respective licenses that must also be followed.
-
-### Misc
-Contact cguo2@ualberta.ca for further questions.
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=EricGuo5513/momask-codes&type=Date)](https://star-history.com/#EricGuo5513/momask-codes&Date)
+- [x] MoMask 기반 코드 정리 및 폴더 구조 재구성
+- [ ] Stage 1: Dataset segmented caption 로딩 구현
+- [ ] Stage 1: MaskTransformer condition 토큰 확장
+- [ ] Stage 2: Motion segment aggregation
+- [ ] Stage 3: Segmented loss 구현

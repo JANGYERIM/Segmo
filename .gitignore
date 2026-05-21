@@ -1,4 +1,30 @@
+# Checkpoints & pretrained models
+checkpoints/
+
+# Datasets
+dataset/
+
+# Logs
+logs/
+
+# Python cache
+__pycache__/
 *.pyc
-checkpoints
-editing
-generation
+*.pyo
+*.pyd
+
+# Python egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+*.env

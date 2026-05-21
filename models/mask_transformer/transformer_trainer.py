@@ -37,7 +37,7 @@ class MaskTransformerTrainer:
 
     def forward(self, batch_data):
 
-        conds, motion, m_lens = batch_data
+        conds, motion, m_lens, seg_captions = batch_data
         motion = motion.detach().float().to(self.device)
         m_lens = m_lens.detach().long().to(self.device)
 
@@ -51,7 +51,7 @@ class MaskTransformerTrainer:
         # self.pred_ids = []
         # self.acc = []
 
-        _loss, _pred_ids, _acc = self.t2m_transformer(code_idx[..., 0], conds, m_lens)
+        _loss, _pred_ids, _acc = self.t2m_transformer(code_idx[..., 0], conds, m_lens, seg_captions)
 
         return _loss, _acc
 
@@ -209,7 +209,7 @@ class ResidualTransformerTrainer:
 
     def forward(self, batch_data):
 
-        conds, motion, m_lens = batch_data
+        conds, motion, m_lens, seg_captions = batch_data
         motion = motion.detach().float().to(self.device)
         m_lens = m_lens.detach().long().to(self.device)
 
@@ -219,7 +219,7 @@ class ResidualTransformerTrainer:
 
         conds = conds.to(self.device).float() if torch.is_tensor(conds) else conds
 
-        ce_loss, pred_ids, acc = self.res_transformer(code_idx, conds, m_lens)
+        ce_loss, pred_ids, acc = self.res_transformer(code_idx, conds, m_lens, seg_captions)
 
         return ce_loss, acc
 

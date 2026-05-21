@@ -27,6 +27,7 @@ class TrainT2MOptions(BaseOptions):
         # self.parser.add_argument('--save_every_e', type=int, default=100, help='Frequency of printing training progress')
         self.parser.add_argument('--eval_every_e', type=int, default=10, help='Frequency of animating eval results, (epoch)')
         self.parser.add_argument('--save_latest', type=int, default=500, help='Frequency of saving checkpoint, (iteration)')
+        self.parser.add_argument('--seg_captions', type=str, help='Path to segmented captions directory')
 
 
         self.is_train = True
