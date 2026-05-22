@@ -16,6 +16,11 @@ def collate_fn(batch):
     m_lens = default_collate(list(m_lens))
     return list(captions), motions, m_lens, list(seg_captions)
 
+
+def collate_fn_eval(batch):
+    batch.sort(key=lambda x: x[3], reverse=True)
+    return default_collate(batch)
+
 class MotionDataset(data.Dataset):
     def __init__(self, opt, mean, std, split_file):
         self.opt = opt
@@ -244,7 +249,7 @@ class Text2MotionDataset(data.Dataset):
             with open(pjoin(seg_dir, 'train.jsonl')) as f:
                 for line in f:
                     entry = json.loads(line)
-                    seg_dict[entry['id']] = entry['seg_captions']
+                    seg_dict[entry['id']] = entry['captions']
         data_dict = {}
         id_list = []
         with cs.open(split_file, 'r') as f:

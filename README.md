@@ -100,10 +100,10 @@ Segmo/
 - 같은 `cond_emb` layer를 전체 텍스트 및 모든 segment에 공유 사용
 - Transformer self-attention이 모션 토큰 위치에 따라 적절한 segment 토큰에 attention하도록 학습에 맡김
 
-**알려진 한계 / 추후 개선 사항:**
-- 배치 내 샘플마다 segment 수가 다를 때, segment가 없는 자리는 0벡터로 채워서 condition 토큰으로 넣음
-  - `Linear(0벡터) = bias`이므로 완전한 0이 아니고 noise로 작용할 수 있음
-  - 추후 개선: invalid segment 위치에 attention mask를 추가하여 transformer가 해당 토큰을 무시하도록 처리
+**padding mask 처리:**
+- 배치 내 샘플마다 segment 수가 다를 때, 최대 segment 수에 맞춰 패딩
+- segment가 없는 자리는 0벡터로 채우고, `seg_valid_masks`를 통해 해당 위치를 `padding_mask=True`로 마스킹
+- transformer가 유효하지 않은 segment 토큰에 attention하지 않도록 처리
 
 ---
 
@@ -127,7 +127,8 @@ Segmo/
 ## 현재 진행 상황
 
 - [x] MoMask 기반 코드 정리 및 폴더 구조 재구성
-- [ ] Stage 1: Dataset segmented caption 로딩 구현
-- [ ] Stage 1: MaskTransformer condition 토큰 확장
+- [x] Stage 1: Dataset segmented caption 로딩 구현
+- [x] Stage 1: MaskTransformer / ResidualTransformer condition 토큰 확장
+- [x] Stage 1: invalid segment 위치 padding mask 처리
 - [ ] Stage 2: Motion segment aggregation
 - [ ] Stage 3: Segmented loss 구현
