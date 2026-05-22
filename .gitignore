@@ -1,4 +1,58 @@
-*.pyc
-checkpoints
-editing
-generation
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg
+*.egg-info/
+dist/
+build/
+*.so
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Model checkpoints & weights
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.safetensors
+*.pkl
+*.npy
+*.npz
+
+# Logs & outputs
+logs/
+log/
+runs/
+*.log
+*.out
+slurm-*.out
+
+# Dataset
+dataset/HumanML3D
+dataset/KIT-ML
+
+# Generated results
+output/
+results/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
