@@ -136,6 +136,13 @@ class MaskTransformer(nn.Module):
         self.output_process = OutputProcess_Bert(out_feats=opt.num_tokens, latent_dim=latent_dim)
 
         self.token_emb = nn.Embedding(_num_tokens, self.code_dim)
+        
+        # motion aggregation
+        self.seg_aggregator = nn.Sequential(
+            nn.Linear(2 * self.code_dim, self.latent_dim),
+            #nn.ReLU(),
+            #nn.Linear(self.latent_dim, self.latent_dim)
+        )
 
         self.apply(self.__init_weights)
 
@@ -207,6 +214,46 @@ class MaskTransformer(nn.Module):
         else:
             return cond
 
+    def aggregate_motion_segments(self, x0_emb, m_lens, seg_captions):
+        # x0_emb: (b, seqlen, code_dim)
+        # m_lens: (b,) - 유효한 모션 토큰 길이
+        # seg_captions: list of (list or None)
+        # returns: list of (b, latent_dim) tensors, 길이 = max_seg
+        #          or None if seg_captions 없음
+        
+        valid_segs = [s for s in seg_captions if s is not None]
+        if not valid_segs:
+            return None
+        
+        max_seg = max(len(s) for s in valid_segs)
+        b = x0_emb.shape[0]
+        device = x0_emb.device
+        
+        seg_motion_vectors = []
+        for seg_idx in range(max_seg):
+            feats = []
+            for i, (segs, m_len) in enumerate(zip(seg_captions, m_lens)):
+                if segs is not None and seg_idx < len(segs):
+                    n_seg = len(segs)
+                    m_len_i = m_len.item()
+                    si = seg_idx * m_len_i // n_seg
+                    ei = (seg_idx +1) * m_len_i // n_seg
+                    ei = max(ei, si+1) 
+                    segment_emb = x0_emb[i, si:ei, :]
+                    mean_feat = segment_emb.mean(dim=0)
+                    max_feat = segment_emb.max(dim=0).values
+                    feat = torch.cat([mean_feat, max_feat], dim=-1)
+                else:
+                    feat = torch.zeros(2 * x0_emb.shape[-1], device=device)
+                feats.append(feat)
+                
+            feats = torch.zeros(2 * x0_emb.shape[-1], device=device)
+            mi = self.seg_aggregator(feats)
+            seg_motion_vectors.append(mi)
+        
+        return seg_motion_vectors
+    
+    
     def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None):
         '''
         :param motion_ids: (b, seqlen)
@@ -269,6 +316,9 @@ class MaskTransformer(nn.Module):
         # Positions that are PADDED are ALL FALSE
         non_pad_mask = lengths_to_mask(m_lens, ntokens) #(b, n)
         ids = torch.where(non_pad_mask, ids, self.pad_id)
+        
+        #x0_emb = self.token_emb(ids) #(b, seqlen, code_dim), GT token embedding
+        
 
         force_mask = False
         seg_cond_vectors = None
@@ -339,6 +389,8 @@ class MaskTransformer(nn.Module):
         x_ids = torch.where(mask_mid, self.mask_id, x_ids)
         
         logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
+        
+        
         ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
 
         return ce_loss, pred_id, acc

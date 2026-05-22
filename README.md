@@ -107,12 +107,51 @@ Segmo/
 
 ---
 
-### Stage 2: Motion Segment Aggregation
-
+### Stage 2-1: Motion Segmentation
 - 모션 프레임을 segment 수(N)로 **균등 분할**
   - 예: 모션 길이 90프레임, segment 3개 → [0:30], [30:60], [60:90]
-- 각 구간의 모션 토큰과 대응하는 segment 텍스트를 매핑
-- VQ-VAE로 인코딩된 모션 코드 레벨에서 구간 매핑 처리
+
+### Stage 2-2: Motion Segmentation Aggregation
+- motion segmetation에서 나온 각 motion 정보를 aggregatino input으로 넣음, output(motion segment token)으로 각 구간의 요약정보?를 출력하도록 함 m1, m2, m3 ...
+mi =Agg(x0,si,ei)
+=MLP(Concat(mean(x0si:ei),max(x0si:ei))). 
+mi의 계산은 위 식과 같음
+
+3.4. Motion Segment Extraction
+After obtaining the text segments of the textual description,
+the next step is to extract the corresponding motion seg
+ments, which will serve as the atomic alignment units.
+The segmentation module partitions the motion into the
+same number of segments as the text. We adopt a uni
+form segmentation strategy as our default choice, where
+motion tokens are evenly distributed across the text seg
+ments, ensuring balanced segment lengths that facilitate sta
+ble text–motion alignment and consistent model training.
+Given the predicted base tokens x0 from the mask trans
+former, along with the start index si and end index ei of the
+i-th motion segment fromthesegmentation module, the mo
+tion segment aggregation module outputs the corresponding
+motion segment mi:
+mi =Agg(x0,si,ei)
+=MLP(Concat(mean(x0
+si:ei
+),max(x0
+si:ei
+))). (6)
+For comparison, we also explored other feasible segmen
+tation methods, including Change-Point-Detection (CPD)
+based and Clustering-based segmentation approaches. De
+tails are provided in Section 4.3. While these methods can
+be applied, uniform segmentation consistently produces the
+most stable alignment and training performance, resulting
+in superior generation quality compared to alternative meth
+ods
+
+
+
+추후
+
+- 각 구간의 모션 토큰과 대응하는 segment 텍스트를 매핑(alignment)하여 loss를 구현할 예정(Stage 3)
 
 ---
 
@@ -132,3 +171,7 @@ Segmo/
 - [x] Stage 1: invalid segment 위치 padding mask 처리
 - [ ] Stage 2: Motion segment aggregation
 - [ ] Stage 3: Segmented loss 구현
+
+
+## 추후 개선
+segmented 된 motion정보는 Transformer에 입력으로 쓰이거나, 직접 조절 장치로 사용되지 않음. 오직 loss의 가중치로만 간접적 전달이 되고 있음. 이 부분을 바꿔서 성능 개선을 해볼 예정. 아이디어도 추천 받음
