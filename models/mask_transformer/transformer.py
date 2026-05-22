@@ -237,8 +237,8 @@ class MaskTransformer(nn.Module):
                     n_seg = len(segs)
                     m_len_i = m_len.item()
                     si = seg_idx * m_len_i // n_seg
-                    ei = (seg_idx +1) * m_len_i // n_seg
-                    ei = max(ei, si+1) 
+                    ei = (seg_idx + 1) * m_len_i // n_seg
+                    ei = max(ei, si + 1)
                     segment_emb = x0_emb[i, si:ei, :]
                     mean_feat = segment_emb.mean(dim=0)
                     max_feat = segment_emb.max(dim=0).values
@@ -246,8 +246,8 @@ class MaskTransformer(nn.Module):
                 else:
                     feat = torch.zeros(2 * x0_emb.shape[-1], device=device)
                 feats.append(feat)
-                
-            feats = torch.zeros(2 * x0_emb.shape[-1], device=device)
+
+            feats = torch.stack(feats, dim=0)  # (b, 2*code_dim)
             mi = self.seg_aggregator(feats)
             seg_motion_vectors.append(mi)
         
@@ -390,10 +390,24 @@ class MaskTransformer(nn.Module):
         
         logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
         
+        # 마스킹된 위치: softmax로 soft embedding
+        probs = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
+        codebook = self.token_emb.weight[:self.opt.num_tokens]
+        soft_emb = torch.einsum('bts,td->bsd', probs, codebook)  # (b, seqlen, code_dim)
+         # 마스킹 안 된 위치: GT token embedding
+        gt_emb = self.token_emb(ids)  # (b, seqlen, code_dim)
+
+        # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
+        x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb, gt_emb)
+        
         
         ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
 
-        return ce_loss, pred_id, acc
+        
+        seg_motion_vectors = None
+        if seg_captions is not None:
+            seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
+        return ce_loss, pred_id, acc, seg_motion_vectors
 
     def forward_with_cond_scale(self,
                                 motion_ids,

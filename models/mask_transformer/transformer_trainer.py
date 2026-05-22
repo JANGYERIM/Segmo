@@ -51,7 +51,7 @@ class MaskTransformerTrainer:
         # self.pred_ids = []
         # self.acc = []
 
-        _loss, _pred_ids, _acc = self.t2m_transformer(code_idx[..., 0], conds, m_lens, seg_captions)
+        _loss, _pred_ids, _acc, _seg_motion_vecs = self.t2m_transformer(code_idx[..., 0], conds, m_lens, seg_captions)
 
         return _loss, _acc
 
