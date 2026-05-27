@@ -138,11 +138,13 @@ class MaskTransformer(nn.Module):
         self.token_emb = nn.Embedding(_num_tokens, self.code_dim)
         
         # motion aggregation
-        self.seg_aggregator = nn.Sequential(
-            nn.Linear(2 * self.code_dim, self.latent_dim),
-            #nn.ReLU(),
-            #nn.Linear(self.latent_dim, self.latent_dim)
-        )
+        # self.seg_aggregator = nn.Sequential(
+        #     nn.Linear(2 * self.code_dim, self.latent_dim),
+        #     #nn.ReLU(),
+        #     #nn.Linear(self.latent_dim, self.latent_dim)
+        # )
+        self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
+        self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
 
         self.apply(self.__init_weights)
 
@@ -253,6 +255,44 @@ class MaskTransformer(nn.Module):
         
         return seg_motion_vectors
     
+    def compute_align_loss(self, seg_cond_vectors, seg_motion_vectors, seg_valid_masks):
+        max_seg = len(seg_motion_vectors)
+        b = seg_motion_vectors[0].shape[0]
+        device = seg_motion_vectors[0].device
+        
+        #text/motion segmnet -> latent_dim
+        t_vecs = torch.stack([self.cond_emb(seg_cond_vectors[j])for j in range(max_seg)], dim=0) #(max_seg, b, latent_dim)
+        m_vecs = torch.stack(seg_motion_vectors, dim=0) #(max_seg, b, latent_dim)
+        
+        valid = torch.stack(seg_valid_masks, dim=0).float() #(max_seg, b)
+        
+        t_vecs = F.normalize(t_vecs, dim=-1)
+        m_vecs = F.normalize(m_vecs, dim=-1)
+        
+        total_loss = 0.
+        count = 0
+        
+        for i in range(b):
+            valid_mask = valid[:, i].bool()  # (max_seg,)
+            n_valid = valid_mask.sum().item()
+            if n_valid < 2:
+                continue
+            
+            t = t_vecs[valid_mask, i, :] # (A, latent_dim)
+            m = m_vecs[valid_mask, i, :] # (A, latent_dim)
+            
+            sim = torch.matmul(t, m.T) / self.tau
+            labels = torch.arange(n_valid, device=device)
+            
+            L_t2m = F.cross_entropy(sim, labels)
+            L_m2t = F.cross_entropy(sim.T, labels)
+            total_loss += (L_t2m + L_m2t) / 2
+            count += 1
+        
+        if count == 0:
+            return torch.tensor(0., device=device, requires_grad=True)
+
+        return total_loss / count
     
     def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None):
         '''
@@ -399,15 +439,21 @@ class MaskTransformer(nn.Module):
 
         # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
         x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb, gt_emb)
-        
-        
-        ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
-
-        
+    
         seg_motion_vectors = None
         if seg_captions is not None:
             seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
-        return ce_loss, pred_id, acc, seg_motion_vectors
+
+        ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
+
+        Lalign = torch.tensor(0., device=device)
+        if seg_motion_vectors is not None:
+            Lalign = self.compute_align_loss(seg_cond_vectors, seg_motion_vectors, seg_valid_masks)
+        
+        lambda_align = self.opt.lambda_align
+        total_loss = ce_loss + lambda_align * Lalign
+           
+        return total_loss, pred_id, acc, seg_motion_vectors
 
     def forward_with_cond_scale(self,
                                 motion_ids,

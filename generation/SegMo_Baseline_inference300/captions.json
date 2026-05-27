@@ -1,0 +1,1332 @@
+{
+  "001589": {
+    "captions": [
+      {
+        "full": "a person runs on the spot.",
+        "full_ko": "사람이 그 자리에서 달려온다.",
+        "segments": [
+          {
+            "text": "A person runs on the spot",
+            "text_ko": "그 자리에서 사람이 달려온다"
+          }
+        ]
+      },
+      {
+        "full": "a person jogs in place for a few seconds and then stops.",
+        "full_ko": "사람은 몇 초 동안 제자리에서 조깅한 다음 멈춥니다.",
+        "segments": [
+          {
+            "text": "A person jogs in place for a few seconds",
+            "text_ko": "몇 초 동안 제자리에서 조깅하는 사람"
+          },
+          {
+            "text": "A person stops",
+            "text_ko": "사람이 멈춰요"
+          }
+        ]
+      },
+      {
+        "full": "a person is running in place.",
+        "full_ko": "사람이 제자리에서 달리고 있습니다.",
+        "segments": [
+          {
+            "text": "A person is running in place",
+            "text_ko": "사람이 제자리에서 달리고 있다"
+          }
+        ]
+      }
+    ]
+  },
+  "M000824": {
+    "captions": [
+      {
+        "full": "person is jogging and then gets down and walks like an ape and then gets back up and jogs again.",
+        "full_ko": "사람은 조깅을 하다가 내려와 원숭이처럼 걷고 다시 일어나서 다시 조깅을 합니다.",
+        "segments": [
+          {
+            "text": "A person is jogging",
+            "text_ko": "한 사람이 조깅을 ​​하고 있다"
+          },
+          {
+            "text": "A person gets down and walks like an ape",
+            "text_ko": "사람이 내려서 원숭이처럼 걷는다"
+          },
+          {
+            "text": "A person gets back up",
+            "text_ko": "사람이 다시 일어선다"
+          },
+          {
+            "text": "A person jogs again",
+            "text_ko": "또 조깅하는 사람"
+          }
+        ]
+      },
+      {
+        "full": "a person/ animal comes to a stop. bends over onto all fours and crawls for a bit. stand back up and runs off.",
+        "full_ko": "사람/동물이 멈춥니다.네 발로 몸을 구부리고 잠시 기어갑니다.다시 일어나서 달려간다.",
+        "segments": [
+          {
+            "text": "A person or animal comes to a stop",
+            "text_ko": "사람이나 동물이 멈춰 섰다."
+          },
+          {
+            "text": "A person or animal bends over onto all fours and crawls for a bit",
+            "text_ko": "사람이나 동물이 네 발로 몸을 구부리고 잠시 기어다닌다."
+          },
+          {
+            "text": "A person or animal stands back up and runs off",
+            "text_ko": "사람이나 동물이 일어서서 도망가는 경우"
+          }
+        ]
+      },
+      {
+        "full": "a person in running and has to crawl under an obstacle to continue",
+        "full_ko": "달리고 있는 사람이 계속하려면 장애물 아래로 기어가야 합니다.",
+        "segments": [
+          {
+            "text": "A person runs",
+            "text_ko": "사람이 달린다"
+          },
+          {
+            "text": "A person crawls under an obstacle",
+            "text_ko": "사람이 장애물 아래로 기어가는 모습"
+          }
+        ]
+      }
+    ]
+  },
+  "M009561": {
+    "captions": [
+      {
+        "full": "a person runs fast diagonal.",
+        "full_ko": "사람이 대각선으로 빠르게 달린다.",
+        "segments": [
+          {
+            "text": "A person runs fast diagonal",
+            "text_ko": "사람이 대각선으로 빠르게 달린다"
+          }
+        ]
+      },
+      {
+        "full": "someone runs forward quickly, swinging their arms back and forth in front of them.",
+        "full_ko": "누군가 팔을 앞뒤로 휘두르며 빠르게 앞으로 달려갑니다.",
+        "segments": [
+          {
+            "text": "A person runs forward quickly",
+            "text_ko": "사람이 빠르게 앞으로 달려간다"
+          },
+          {
+            "text": "A person swings their arms back and forth in front of them",
+            "text_ko": "사람이 팔을 앞뒤로 앞뒤로 흔든다."
+          }
+        ]
+      },
+      {
+        "full": "the person runs in a straight line at a 45 degree angle to their right.",
+        "full_ko": "그 사람은 오른쪽으로 45도 각도로 직선으로 달린다.",
+        "segments": [
+          {
+            "text": "The person runs in a straight line at a 45 degree angle to their right",
+            "text_ko": "그 사람은 오른쪽으로 45도 각도로 직선으로 달린다."
+          }
+        ]
+      }
+    ]
+  },
+  "M002542": {
+    "captions": [
+      {
+        "full": "a man leans forward to pick up an object slightly to his right, and places it down slightly to his left.",
+        "full_ko": "한 남자가 몸을 앞으로 기울여 약간 오른쪽에 있는 물건을 집어 약간 왼쪽에 내려 놓습니다.",
+        "segments": [
+          {
+            "text": "A man leans forward to pick up an object slightly to his right",
+            "text_ko": "남자는 약간 오른쪽에 있는 물건을 집기 위해 앞으로 몸을 기울인다"
+          },
+          {
+            "text": "A man places the object down slightly to his left",
+            "text_ko": "남자가 물건을 약간 왼쪽 아래에 놓습니다."
+          }
+        ]
+      },
+      {
+        "full": "person standing bends forward slightly to left to pick something up with both hands and moves item slightly to the right",
+        "full_ko": "서있는 사람은 양손으로 물건을 집기 위해 약간 왼쪽으로 몸을 구부리고 물건을 약간 오른쪽으로 옮깁니다.",
+        "segments": [
+          {
+            "text": "A person standing bends forward slightly to the left",
+            "text_ko": "서있는 사람이 왼쪽으로 약간 앞으로 구부러집니다."
+          },
+          {
+            "text": "A person picks something up with both hands",
+            "text_ko": "사람이 양손으로 물건을 집는다."
+          },
+          {
+            "text": "A person moves the item slightly to the right",
+            "text_ko": "사람이 항목을 약간 오른쪽으로 이동합니다."
+          }
+        ]
+      },
+      {
+        "full": "a person lifts up a box on the left side and puts it on the right side",
+        "full_ko": "사람이 왼쪽에 있는 상자를 들어 올려 오른쪽에 놓는다.",
+        "segments": [
+          {
+            "text": "A person lifts up a box on the left side",
+            "text_ko": "한 사람이 왼쪽에 있는 상자를 들어 올립니다."
+          },
+          {
+            "text": "A person puts the box on the right side",
+            "text_ko": "한 사람이 상자를 오른쪽에 놓았습니다."
+          }
+        ]
+      }
+    ]
+  },
+  "M010145": {
+    "captions": []
+  },
+  "002769": {
+    "captions": [
+      {
+        "full": "a person picks something up, tilts it, and then places it back.",
+        "full_ko": "사람이 무언가를 집어 기울여 기울인 다음 다시 놓습니다.",
+        "segments": [
+          {
+            "text": "A person picks something up",
+            "text_ko": "사람이 뭔가를 집는다"
+          },
+          {
+            "text": "A person tilts something",
+            "text_ko": "사람이 뭔가를 기울인다"
+          },
+          {
+            "text": "A person places something back",
+            "text_ko": "사람이 뭔가를 돌려놓는다"
+          }
+        ]
+      },
+      {
+        "full": "pretend to hold something and moves it",
+        "full_ko": "뭔가를 쥐고 움직이는 척",
+        "segments": [
+          {
+            "text": "A person pretends to hold something",
+            "text_ko": "사람이 뭔가를 들고 있는 척"
+          },
+          {
+            "text": "A person moves the something",
+            "text_ko": "사람이 뭔가를 움직인다"
+          }
+        ]
+      },
+      {
+        "full": "a person carries something with both arms.",
+        "full_ko": "사람은 양팔로 무언가를 들고 다닙니다.",
+        "segments": [
+          {
+            "text": "A person carries something with both arms",
+            "text_ko": "사람은 두 팔로 물건을 들고 다닌다."
+          }
+        ]
+      }
+    ]
+  },
+  "M000904": {
+    "captions": [
+      {
+        "full": "a person jogs forward and semi circles around to the left and then to the right.",
+        "full_ko": "사람이 앞으로 조깅하고 왼쪽으로 반원을 돌다가 오른쪽으로 돌아갑니다.",
+        "segments": [
+          {
+            "text": "A person jogs forward",
+            "text_ko": "한 사람이 앞으로 조깅을 하고 있다"
+          },
+          {
+            "text": "A person semi circles around to the left",
+            "text_ko": "한 사람이 왼쪽으로 반원을 돌고 있습니다."
+          },
+          {
+            "text": "A person semi circles around to the right",
+            "text_ko": "한 사람이 오른쪽으로 반원을 돌고 있습니다."
+          }
+        ]
+      },
+      {
+        "full": "a person jogs around a small area.",
+        "full_ko": "한 사람이 작은 지역을 조깅하고 있습니다.",
+        "segments": [
+          {
+            "text": "A person jogs around a small area",
+            "text_ko": "한 사람이 작은 지역을 조깅하고 있다."
+          }
+        ]
+      },
+      {
+        "full": "a person jogs downwards towards the left hand side, then turns around and jogs a long clockwise arc to the right and then jogs a counterclockwise arc to the left side.",
+        "full_ko": "사람은 왼쪽을 향해 아래로 조깅한 다음 돌아서 오른쪽으로 긴 시계 방향 호를 조깅한 다음 왼쪽으로 시계 반대 방향 호를 조깅합니다.",
+        "segments": [
+          {
+            "text": "A person jogs downwards towards the left hand side",
+            "text_ko": "한 사람이 왼쪽 방향으로 아래쪽으로 조깅하고 있습니다."
+          },
+          {
+            "text": "A person turns around",
+            "text_ko": "사람이 돌아서다"
+          },
+          {
+            "text": "A person jogs a long clockwise arc to the right",
+            "text_ko": "한 사람이 시계 방향으로 긴 호를 오른쪽으로 조깅합니다."
+          },
+          {
+            "text": "A person jogs a counterclockwise arc to the left side",
+            "text_ko": "한 사람이 시계 반대 방향으로 호를 왼쪽으로 조깅합니다."
+          }
+        ]
+      }
+    ]
+  },
+  "M010080": {
+    "captions": [
+      {
+        "full": "the man turns right calmly",
+        "full_ko": "남자는 조용히 우회전한다",
+        "segments": [
+          {
+            "text": "The man turns right calmly",
+            "text_ko": "남자는 조용히 우회전한다"
+          }
+        ]
+      },
+      {
+        "full": "a person is walking, turns around and then walks back",
+        "full_ko": "사람이 걷고 있다가 돌아섰다가 다시 걸어간다",
+        "segments": [
+          {
+            "text": "A person is walking",
+            "text_ko": "사람이 걷고 있어요"
+          },
+          {
+            "text": "A person turns around",
+            "text_ko": "사람이 돌아서다"
+          },
+          {
+            "text": "A person walks back",
+            "text_ko": "사람이 뒤로 걸어가네"
+          }
+        ]
+      },
+      {
+        "full": "the person look forward and then turned around to the right.",
+        "full_ko": "그 사람은 앞을 내다보더니 오른쪽으로 돌아섰습니다.",
+        "segments": [
+          {
+            "text": "The person looks forward",
+            "text_ko": "그 사람은 기대한다"
+          },
+          {
+            "text": "The person turns around to the right",
+            "text_ko": "그 사람은 오른쪽으로 돌아선다."
+          }
+        ]
+      }
+    ]
+  },
+  "M005197": {
+    "captions": [
+      {
+        "full": "a person lowers their arms to their sides, then stretches them out straight in front of them and parallel to the ground before returning them to their sides.",
+        "full_ko": "사람은 팔을 옆으로 내린 다음 앞으로 곧게 뻗어 땅과 평행하게 한 다음 옆으로 되돌립니다.",
+        "segments": [
+          {
+            "text": "A person lowers their arms to their sides",
+            "text_ko": "사람이 팔을 옆으로 내립니다."
+          },
+          {
+            "text": "A person stretches their arms out straight in front of them and parallel to the ground",
+            "text_ko": "사람이 팔을 앞으로 곧게 뻗어 지면과 평행하게 뻗습니다."
+          },
+          {
+            "text": "A person returns their arms to their sides",
+            "text_ko": "사람이 팔을 옆으로 되돌립니다."
+          }
+        ]
+      },
+      {
+        "full": "the person standing with his arms out wide and then calls them into chest.",
+        "full_ko": "팔을 활짝 벌리고 서 있는 사람이 팔을 가슴 쪽으로 부른다.",
+        "segments": [
+          {
+            "text": "The person stands with his arms out wide",
+            "text_ko": "그 사람은 두 팔을 벌리고 서 있다."
+          },
+          {
+            "text": "The person calls them into chest",
+            "text_ko": "그 사람이 가슴으로 불러요"
+          }
+        ]
+      },
+      {
+        "full": "a man stretches his arms out to the side shoulder length, then brings them in front of him with elbow slightly bent.",
+        "full_ko": "남자는 팔을 어깨 길이만큼 쭉 뻗은 다음 팔꿈치를 약간 구부린 채 앞으로 가져옵니다.",
+        "segments": [
+          {
+            "text": "A man stretches his arms out to the side shoulder length",
+            "text_ko": "남자가 팔을 옆 어깨 길이까지 쭉 뻗는다"
+          },
+          {
+            "text": "A man brings his arms in front of him with elbow slightly bent",
+            "text_ko": "남자는 팔꿈치를 약간 구부린 채 팔을 앞으로 가져옵니다."
+          }
+        ]
+      }
+    ]
+  },
+  "M010150": {
+    "captions": [
+      {
+        "full": "from a standing position person leans their head down to their left slowly, in front of their chest then back up kind of like a snake.",
+        "full_ko": "선 자세에서 사람은 머리를 천천히 왼쪽으로 숙인 다음 가슴 앞에서 뱀처럼 뒤로 젖힙니다.",
+        "segments": [
+          {
+            "text": "A person leans their head down to their left slowly",
+            "text_ko": "사람이 천천히 왼쪽으로 고개를 숙인다."
+          },
+          {
+            "text": "A person moves their head back up kind of like a snake",
+            "text_ko": "사람이 뱀처럼 머리를 뒤로 젖히는군요."
+          }
+        ]
+      },
+      {
+        "full": "the man looks around on the ground for something.",
+        "full_ko": "남자는 뭔가를 찾기 위해 땅바닥을 둘러봅니다.",
+        "segments": [
+          {
+            "text": "The man looks around on the ground for something",
+            "text_ko": "남자는 뭔가를 찾기 위해 땅바닥을 둘러보고 있다"
+          }
+        ]
+      },
+      {
+        "full": "the person is bending in a forward motion, they then move in an s-shaped pattern to arch their back and extend back up to an upleft position.",
+        "full_ko": "사람은 앞으로 몸을 구부리고, 그런 다음 S자 모양으로 움직여 등을 아치 모양으로 만들고 다시 왼쪽 위로 뻗습니다.",
+        "segments": [
+          {
+            "text": "The person bends in a forward motion",
+            "text_ko": "사람이 앞으로 몸을 구부린다."
+          },
+          {
+            "text": "The person moves in an s-shaped pattern to arch their back and extend back up to an upleft position",
+            "text_ko": "환자는 S자 패턴으로 움직여 등을 아치형으로 만들고 다시 왼쪽 위 자세로 뻗습니다."
+          }
+        ]
+      }
+    ]
+  },
+  "003142": {
+    "captions": [
+      {
+        "full": "a person crawls on hands and knees forward, stands up with side showing.",
+        "full_ko": "사람이 손과 무릎을 앞으로 기어가며 옆면을 보여주며 일어선다.",
+        "segments": [
+          {
+            "text": "A person crawls on hands and knees forward",
+            "text_ko": "사람이 손과 무릎을 앞으로 기어갑니다."
+          },
+          {
+            "text": "A person stands up with side showing",
+            "text_ko": "사람이 일어 서서 측면을 보여줍니다."
+          }
+        ]
+      },
+      {
+        "full": "a human os crawling on the ground with hands and knees, stands up first on his left foot and turns counter clockwise one hundred and eighty degrees.",
+        "full_ko": "손과 무릎으로 땅을 기어가는 인간 OS가 먼저 왼발로 서서 시계 반대 방향으로 180도 회전합니다.",
+        "segments": [
+          {
+            "text": "A human is crawling on the ground with hands and knees",
+            "text_ko": "인간이 손과 무릎으로 땅을 기어가고 있다."
+          },
+          {
+            "text": "A human stands up first on his left foot",
+            "text_ko": "인간이 왼발로 먼저 일어선다"
+          },
+          {
+            "text": "A human turns counter clockwise one hundred and eighty degrees",
+            "text_ko": "인간은 시계 반대 방향으로 180도 회전합니다."
+          }
+        ]
+      },
+      {
+        "full": "someone crawls across the floor then stands up.",
+        "full_ko": "누군가 바닥을 기어가다가 일어섭니다.",
+        "segments": [
+          {
+            "text": "Someone crawls across the floor",
+            "text_ko": "누군가가 바닥을 기어다닙니다."
+          },
+          {
+            "text": "Someone stands up",
+            "text_ko": "누군가 일어섰다."
+          }
+        ]
+      }
+    ]
+  },
+  "004499": {
+    "captions": [
+      {
+        "full": "a man is doing jumping jacks.",
+        "full_ko": "한 남자가 점핑 잭을 하고 있습니다.",
+        "segments": [
+          {
+            "text": "A man is doing jumping jacks",
+            "text_ko": "한 남자가 점핑잭을 하고 있다"
+          }
+        ]
+      },
+      {
+        "full": "a person does jumping jacks.",
+        "full_ko": "한 사람이 점핑 잭을 하고 있습니다.",
+        "segments": [
+          {
+            "text": "A person does jumping jacks",
+            "text_ko": "한 사람이 점핑잭을 하고 있다"
+          }
+        ]
+      },
+      {
+        "full": "a person does 2 jumping jacks.",
+        "full_ko": "한 사람이 점핑잭을 2번 합니다.",
+        "segments": [
+          {
+            "text": "A person does 2 jumping jacks",
+            "text_ko": "한 사람이 점핑 잭을 2개 수행합니다."
+          }
+        ]
+      }
+    ]
+  },
+  "010512": {
+    "captions": [
+      {
+        "full": "the person was pushed backwards but did not fall.",
+        "full_ko": "그 사람은 뒤로 밀렸지만 넘어지지는 않았습니다.",
+        "segments": [
+          {
+            "text": "The person was pushed backwards",
+            "text_ko": "그 사람이 뒤로 밀렸어요"
+          },
+          {
+            "text": "The person did not fall",
+            "text_ko": "그 사람은 넘어지지 않았어"
+          }
+        ]
+      },
+      {
+        "full": "a person steps forward, gets shoved to the left, and then walks to the right and stops",
+        "full_ko": "사람이 앞으로 나아갔다가 왼쪽으로 밀리고 오른쪽으로 걸어가다가 멈춘다.",
+        "segments": [
+          {
+            "text": "A person steps forward",
+            "text_ko": "사람이 앞으로 나아간다"
+          },
+          {
+            "text": "A person gets shoved to the left",
+            "text_ko": "사람이 왼쪽으로 밀린다."
+          },
+          {
+            "text": "A person walks to the right and stops",
+            "text_ko": "한 사람이 오른쪽으로 걸어가다가 멈춰 섰다."
+          }
+        ]
+      },
+      {
+        "full": "a walking person is pushed by an unseen force, but they recover and continue on their way.",
+        "full_ko": "걷는 사람은 보이지 않는 힘에 밀려났지만 회복되어 계속해서 길을 갑니다.",
+        "segments": [
+          {
+            "text": "A walking person is pushed by an unseen force",
+            "text_ko": "걷는 사람은 보이지 않는 힘에 밀려"
+          },
+          {
+            "text": "A walking person recovers",
+            "text_ko": "걷는 사람이 회복한다"
+          },
+          {
+            "text": "A walking person continues on their way",
+            "text_ko": "걷는 사람이 계속 가던 길을 가다"
+          }
+        ]
+      }
+    ]
+  },
+  "M009730": {
+    "captions": [
+      {
+        "full": "person is acting like a human monkey.",
+        "full_ko": "사람이 인간 원숭이처럼 행동하고 있습니다.",
+        "segments": [
+          {
+            "text": "A person is acting like a human monkey",
+            "text_ko": "사람이 인간 원숭이처럼 행동하고 있습니다."
+          }
+        ]
+      },
+      {
+        "full": "person arches both hands at his sides, scratching at his side with his right arm first, before then using both arms to scratch his sides, then raising his left arm to scratch his head.",
+        "full_ko": "사람은 양손으로 옆구리를 구부리고 오른팔로 옆구리를 먼저 긁은 다음 양팔로 옆구리를 긁고 왼팔을 들어 머리를 긁습니다.",
+        "segments": [
+          {
+            "text": "A person arches both hands at his sides",
+            "text_ko": "사람이 양손을 옆구리에 대고 아치형을 만듭니다."
+          },
+          {
+            "text": "A person scratches at his side with his right arm first",
+            "text_ko": "오른팔로 옆구리를 먼저 긁는 사람"
+          },
+          {
+            "text": "A person uses both arms to scratch his sides",
+            "text_ko": "사람은 양팔을 사용하여 옆구리를 긁습니다."
+          },
+          {
+            "text": "A person raises his left arm to scratch his head",
+            "text_ko": "한 사람이 왼팔을 들고 머리를 긁는다."
+          }
+        ]
+      },
+      {
+        "full": "a person is acting like a monkey",
+        "full_ko": "사람이 원숭이처럼 행동하고 있어요",
+        "segments": [
+          {
+            "text": "A person is acting like a monkey",
+            "text_ko": "사람이 원숭이처럼 행동하고 있어요"
+          }
+        ]
+      }
+    ]
+  },
+  "M007027": {
+    "captions": [
+      {
+        "full": "a person appears to scratch their head.",
+        "full_ko": "사람이 머리를 긁는 것 같습니다.",
+        "segments": [
+          {
+            "text": "A person appears to scratch their head",
+            "text_ko": "사람이 머리를 긁는 것 같다"
+          }
+        ]
+      },
+      {
+        "full": "a person touches his head with his left hand.",
+        "full_ko": "사람이 왼손으로 머리를 만집니다.",
+        "segments": [
+          {
+            "text": "A person touches his head with his left hand",
+            "text_ko": "사람이 왼손으로 머리를 만지고 있다"
+          }
+        ]
+      },
+      {
+        "full": "a person touches his head with his left hand",
+        "full_ko": "사람이 왼손으로 머리를 만지고 있다",
+        "segments": [
+          {
+            "text": "A person touches his head with his left hand",
+            "text_ko": "사람이 왼손으로 머리를 만지고 있다"
+          }
+        ]
+      }
+    ]
+  },
+  "004366": {
+    "captions": [
+      {
+        "full": "the person was laying down on their back.",
+        "full_ko": "그 사람은 등을 대고 누워 있었습니다.",
+        "segments": [
+          {
+            "text": "The person was laying down on their back",
+            "text_ko": "그 사람이 등을 대고 누워 있었어."
+          }
+        ]
+      },
+      {
+        "full": "the man is laying down and getting up",
+        "full_ko": "남자가 누워 있다가 일어나고 있다",
+        "segments": [
+          {
+            "text": "The man is laying down",
+            "text_ko": "남자가 누워있어요"
+          },
+          {
+            "text": "The man gets up",
+            "text_ko": "남자는 일어선다"
+          }
+        ]
+      },
+      {
+        "full": "the man is sitting then lays down.",
+        "full_ko": "남자는 앉아 있다가 눕는다.",
+        "segments": [
+          {
+            "text": "The man is sitting",
+            "text_ko": "남자가 앉아있다"
+          },
+          {
+            "text": "The man lays down",
+            "text_ko": "남자가 누워있다"
+          }
+        ]
+      }
+    ]
+  },
+  "M001014": {
+    "captions": [
+      {
+        "full": "person has arms crossing.",
+        "full_ko": "사람이 팔짱을 끼고 있습니다.",
+        "segments": [
+          {
+            "text": "A person has arms crossing",
+            "text_ko": "사람이 팔짱을 끼고 있다"
+          }
+        ]
+      },
+      {
+        "full": "a person crosses their arms in front of their chest, then drops them back at their sides.",
+        "full_ko": "사람이 가슴 앞에서 팔짱을 끼고 다시 옆으로 떨어뜨립니다.",
+        "segments": [
+          {
+            "text": "A person crosses their arms in front of their chest",
+            "text_ko": "사람이 가슴 앞에서 팔짱을 끼고 있다"
+          },
+          {
+            "text": "A person drops their arms back at their sides",
+            "text_ko": "사람이 팔을 옆으로 뒤로 내립니다."
+          }
+        ]
+      },
+      {
+        "full": "a person stands in place, crosses their arms and then puts them down by their side",
+        "full_ko": "사람이 제자리에 서서 팔짱을 끼고 옆에 내려놓는다.",
+        "segments": [
+          {
+            "text": "A person stands in place",
+            "text_ko": "사람이 그 자리에 서 있다"
+          },
+          {
+            "text": "A person crosses their arms",
+            "text_ko": "사람이 팔짱을 끼고 있다"
+          },
+          {
+            "text": "A person puts their arms down by their side",
+            "text_ko": "한 사람이 팔을 옆으로 내리고"
+          }
+        ]
+      }
+    ]
+  },
+  "M006061": {
+    "captions": []
+  },
+  "M003566": {
+    "captions": [
+      {
+        "full": "person quickly walks in a  counterclockwise position with shoulders facing back happy",
+        "full_ko": "사람이 어깨를 뒤로 향한 채 시계 반대 방향으로 빠르게 걷는다.",
+        "segments": [
+          {
+            "text": "A person quickly walks in a counterclockwise position with shoulders facing back happy",
+            "text_ko": "어깨를 뒤로 향한 채 반시계 방향으로 빠르게 걷는 사람"
+          }
+        ]
+      },
+      {
+        "full": "the person is walking back and forth.",
+        "full_ko": "그 사람이 앞뒤로 걷고 있어요.",
+        "segments": [
+          {
+            "text": "The person is walking back and forth",
+            "text_ko": "그 사람이 앞뒤로 걷고 있어요."
+          }
+        ]
+      },
+      {
+        "full": "it is someone walking across the room.",
+        "full_ko": "누군가가 방을 가로질러 걸어가고 있습니다.",
+        "segments": [
+          {
+            "text": "A person walks across the room",
+            "text_ko": "한 사람이 방을 가로질러 걸어간다"
+          }
+        ]
+      }
+    ]
+  },
+  "000000": {
+    "captions": [
+      {
+        "full": "a man kicks something or someone with his left leg.",
+        "full_ko": "남자가 왼쪽 다리로 무언가나 누군가를 차는 모습.",
+        "segments": [
+          {
+            "text": "A man kicks something or someone with his left leg",
+            "text_ko": "남자가 왼쪽 다리로 물건이나 사람을 차는 경우"
+          }
+        ]
+      },
+      {
+        "full": "the standing person kicks with their left foot before going back to their original stance.",
+        "full_ko": "서있는 사람은 원래 자세로 돌아가기 전에 왼발로 차는 것입니다.",
+        "segments": [
+          {
+            "text": "The standing person kicks with their left foot",
+            "text_ko": "서있는 사람은 왼발로 차는 사람"
+          },
+          {
+            "text": "The standing person goes back to their original stance",
+            "text_ko": "서 있는 사람은 원래 자세로 돌아간다."
+          }
+        ]
+      },
+      {
+        "full": "a man kicks with something or someone with his left leg.",
+        "full_ko": "남자가 왼쪽 다리로 무언가나 누군가를 차는 모습.",
+        "segments": [
+          {
+            "text": "A man kicks with something or someone with his left leg",
+            "text_ko": "남자가 왼쪽 다리로 무언가나 누군가를 차는 모습"
+          }
+        ]
+      },
+      {
+        "full": "he is flying kick with his left leg",
+        "full_ko": "그는 왼쪽 다리로 플라잉킥을 하고 있다",
+        "segments": [
+          {
+            "text": "A person is flying kick with his left leg",
+            "text_ko": "왼쪽 다리로 플라잉킥을 하는 사람"
+          }
+        ]
+      }
+    ]
+  },
+  "002317": {
+    "captions": [
+      {
+        "full": "a person steps around something then sits down on the item and rests each hand on the corresponding thigh",
+        "full_ko": "사람이 무언가 주위를 돌아다닌 다음 그 물건 위에 앉아서 해당 허벅지에 양손을 얹습니다.",
+        "segments": [
+          {
+            "text": "A person steps around something",
+            "text_ko": "사람이 뭔가 주위를 돌아다닌다"
+          },
+          {
+            "text": "A person sits down on the item",
+            "text_ko": "사람이 물건 위에 앉는다"
+          },
+          {
+            "text": "A person rests each hand on the corresponding thigh",
+            "text_ko": "사람은 각 손을 해당 허벅지에 얹습니다."
+          }
+        ]
+      },
+      {
+        "full": "a person walks and sits on something.",
+        "full_ko": "사람이 걷고 뭔가 위에 앉는다.",
+        "segments": [
+          {
+            "text": "A person walks",
+            "text_ko": "사람이 걷는다"
+          },
+          {
+            "text": "A person sits on something",
+            "text_ko": "사람이 뭔가에 앉아"
+          }
+        ]
+      },
+      {
+        "full": "a person walks forward in a half circle, then sits down.",
+        "full_ko": "사람이 반원을 그리며 앞으로 걸어간 다음 앉는다.",
+        "segments": [
+          {
+            "text": "A person walks forward in a half circle",
+            "text_ko": "사람이 반원을 그리며 앞으로 걸어간다"
+          },
+          {
+            "text": "A person sits down",
+            "text_ko": "사람이 앉는다"
+          }
+        ]
+      }
+    ]
+  },
+  "M004050": {
+    "captions": []
+  },
+  "002383": {
+    "captions": [
+      {
+        "full": "person walks forward slowly and hesitates before standing upright",
+        "full_ko": "사람이 천천히 앞으로 걸어가다가 잠시 머뭇거리다가 똑바로 서게 됩니다.",
+        "segments": [
+          {
+            "text": "A person walks forward slowly",
+            "text_ko": "한 사람이 천천히 앞으로 걸어간다."
+          },
+          {
+            "text": "A person hesitates",
+            "text_ko": "사람이 머뭇거린다"
+          },
+          {
+            "text": "A person stands upright",
+            "text_ko": "사람이 똑바로 서 있다"
+          }
+        ]
+      },
+      {
+        "full": "person walks forward and slightly to the left",
+        "full_ko": "사람이 앞으로 약간 왼쪽으로 걸어간다.",
+        "segments": [
+          {
+            "text": "A person walks forward and slightly to the left",
+            "text_ko": "사람이 앞으로 약간 왼쪽으로 걸어간다."
+          }
+        ]
+      },
+      {
+        "full": "a person walking in the straight line forward.",
+        "full_ko": "앞으로 직선으로 걷는 사람.",
+        "segments": [
+          {
+            "text": "A person walks in the straight line forward",
+            "text_ko": "사람이 앞으로 직선으로 걷는다."
+          }
+        ]
+      }
+    ]
+  },
+  "008489": {
+    "captions": [
+      {
+        "full": "a person steps to the left sideways.",
+        "full_ko": "사람이 옆으로 왼쪽으로 걸어갑니다.",
+        "segments": [
+          {
+            "text": "A person steps to the left sideways",
+            "text_ko": "사람이 옆으로 왼쪽으로 걷는다"
+          }
+        ]
+      },
+      {
+        "full": "a person was pushed from their right side and gets back to the original position.",
+        "full_ko": "사람이 오른쪽에서 밀렸다가 원래 위치로 돌아옵니다.",
+        "segments": [
+          {
+            "text": "A person was pushed from their right side",
+            "text_ko": "사람이 오른쪽에서 밀려났어요"
+          },
+          {
+            "text": "A person gets back to the original position",
+            "text_ko": "사람이 원래 위치로 돌아갑니다."
+          }
+        ]
+      },
+      {
+        "full": "a person walks around and stops.",
+        "full_ko": "사람이 걸어 다니다가 멈 춥니 다.",
+        "segments": [
+          {
+            "text": "A person walks around",
+            "text_ko": "사람이 돌아다니다"
+          },
+          {
+            "text": "A person stops",
+            "text_ko": "사람이 멈춰요"
+          }
+        ]
+      }
+    ]
+  },
+  "M011419": {
+    "captions": [
+      {
+        "full": "a figure winds up for the pitch.",
+        "full_ko": "인물이 경기장에 등장합니다.",
+        "segments": [
+          {
+            "text": "A figure winds up for the pitch",
+            "text_ko": "인물이 경기장으로 향합니다."
+          }
+        ]
+      },
+      {
+        "full": "this person appears to be painting.",
+        "full_ko": "이 사람은 그림을 그리는 것 같아요.",
+        "segments": [
+          {
+            "text": "A person appears to be painting",
+            "text_ko": "사람이 그림을 그리는 것 같은데"
+          }
+        ]
+      },
+      {
+        "full": "a person punches in front of them with their left hand.",
+        "full_ko": "한 사람이 왼손으로 그들 앞에 주먹을 친다.",
+        "segments": [
+          {
+            "text": "A person punches in front of them with their left hand",
+            "text_ko": "한 사람이 왼손으로 앞으로 주먹을 날린다."
+          }
+        ]
+      }
+    ]
+  },
+  "014506": {
+    "captions": [
+      {
+        "full": "figure walks forward, raises foot to step up and over, uses other foot to drop down, walks forward and stops.",
+        "full_ko": "인물은 앞으로 걷고, 발을 들어 올려 계속해서 밟고, 다른 발을 사용하여 아래로 내리고, 앞으로 걸어가서 멈춥니다.",
+        "segments": [
+          {
+            "text": "A figure walks forward",
+            "text_ko": "인물이 앞으로 걸어간다"
+          },
+          {
+            "text": "A figure raises foot to step up and over",
+            "text_ko": "인물이 발을 들어올려 계속해서 올라가고 있습니다."
+          },
+          {
+            "text": "A figure uses other foot to drop down",
+            "text_ko": "그림은 다른 발을 사용하여 아래로 내려갑니다."
+          },
+          {
+            "text": "A figure walks forward and stops",
+            "text_ko": "인물이 앞으로 걸어가다가 멈춘다."
+          }
+        ]
+      },
+      {
+        "full": "a person walks forward with their feet parallel. they hop over an object and walk forward",
+        "full_ko": "사람이 발을 평행하게 앞으로 걸어갑니다.그들은 물체 위로 뛰어올라 앞으로 걸어간다.",
+        "segments": [
+          {
+            "text": "A person walks forward with their feet parallel",
+            "text_ko": "사람이 발을 평행하게 앞으로 걸어간다."
+          },
+          {
+            "text": "A person hops over an object",
+            "text_ko": "사람이 물건 위로 뛰어오르다"
+          },
+          {
+            "text": "A person walks forward",
+            "text_ko": "사람이 앞으로 걸어간다"
+          }
+        ]
+      },
+      {
+        "full": "a person walks forward, steps onto and over something, then continues walking forward.",
+        "full_ko": "사람은 앞으로 걸어가고, 무언가를 밟고 밟고, 계속해서 앞으로 걸어갑니다.",
+        "segments": [
+          {
+            "text": "A person walks forward",
+            "text_ko": "사람이 앞으로 걸어간다"
+          },
+          {
+            "text": "A person steps onto and over something",
+            "text_ko": "사람이 뭔가를 밟고 또 밟는다"
+          },
+          {
+            "text": "A person continues walking forward",
+            "text_ko": "한 사람이 계속해서 앞으로 걸어간다."
+          }
+        ]
+      }
+    ]
+  },
+  "M000000": {
+    "captions": [
+      {
+        "full": "a man kicks something or someone with his right leg.",
+        "full_ko": "남자가 오른쪽 다리로 물건이나 사람을 차는 경우.",
+        "segments": [
+          {
+            "text": "A man kicks something or someone with his right leg",
+            "text_ko": "남자가 오른쪽 다리로 물건이나 사람을 차는 모습"
+          }
+        ]
+      },
+      {
+        "full": "the standing person kicks with their right foot before going back to their original stance.",
+        "full_ko": "서있는 사람은 원래 자세로 돌아가기 전에 오른발로 차는 것입니다.",
+        "segments": [
+          {
+            "text": "The standing person kicks with their right foot",
+            "text_ko": "서있는 사람은 오른발로 차는 사람"
+          },
+          {
+            "text": "The standing person goes back to their original stance",
+            "text_ko": "서 있는 사람은 원래 자세로 돌아간다."
+          }
+        ]
+      },
+      {
+        "full": "a man kicks with something or someone with his right leg.",
+        "full_ko": "남자가 오른쪽 다리로 무언가나 누군가를 차는 모습.",
+        "segments": [
+          {
+            "text": "A man kicks with something or someone with his right leg",
+            "text_ko": "남자가 오른쪽 다리로 물건이나 사람을 차는 모습"
+          }
+        ]
+      },
+      {
+        "full": "he is flying kick with his right leg",
+        "full_ko": "그는 오른쪽 다리로 플라잉킥을 하고 있어요",
+        "segments": [
+          {
+            "text": "A person is flying kick with his right leg",
+            "text_ko": "오른쪽 다리로 플라잉킥을 하는 사람"
+          }
+        ]
+      }
+    ]
+  },
+  "M000114": {
+    "captions": [
+      {
+        "full": "a person walks forward then turns around and walks back.",
+        "full_ko": "사람이 앞으로 걸어갔다가 돌아서서 뒤로 걸어갑니다.",
+        "segments": [
+          {
+            "text": "A person walks forward",
+            "text_ko": "사람이 앞으로 걸어간다"
+          },
+          {
+            "text": "A person turns around",
+            "text_ko": "사람이 돌아서다"
+          },
+          {
+            "text": "A person walks back",
+            "text_ko": "사람이 뒤로 걸어가네"
+          }
+        ]
+      },
+      {
+        "full": "a person takes two steps forward, spins around counterclockwise in the opposite direction, and takes two steps back.",
+        "full_ko": "사람은 두 걸음 앞으로 나아가고, 시계 반대 방향으로 반대 방향으로 돌고, 두 걸음 뒤로 물러납니다.",
+        "segments": [
+          {
+            "text": "A person takes two steps forward",
+            "text_ko": "사람은 두 걸음 앞으로 나아간다"
+          },
+          {
+            "text": "A person spins around counterclockwise in the opposite direction",
+            "text_ko": "사람은 시계 반대 방향으로 반대 방향으로 회전합니다."
+          },
+          {
+            "text": "A person takes two steps back",
+            "text_ko": "사람은 두 걸음 뒤로 물러난다"
+          }
+        ]
+      },
+      {
+        "full": "a person zig zagging in line",
+        "full_ko": "지그재그로 줄을 서 있는 사람",
+        "segments": [
+          {
+            "text": "A person zig zags in line",
+            "text_ko": "지그재그로 줄을 서 있는 사람"
+          }
+        ]
+      }
+    ]
+  },
+  "M005352": {
+    "captions": [
+      {
+        "full": "man walking in a circle to his left (counterclockwise)",
+        "full_ko": "왼쪽(시계 반대 방향)으로 원을 그리며 걷고 있는 남자",
+        "segments": [
+          {
+            "text": "A man walks in a circle to his left counterclockwise",
+            "text_ko": "한 남자가 시계 반대 방향으로 왼쪽으로 원을 그리며 걷고 있습니다."
+          }
+        ]
+      },
+      {
+        "full": "a person walks in a counterclockwise circle.",
+        "full_ko": "사람이 시계 반대 방향으로 원을 그리며 걷는다.",
+        "segments": [
+          {
+            "text": "A person walks in a counterclockwise circle",
+            "text_ko": "사람이 시계 반대 방향으로 원을 그리며 걷는다"
+          }
+        ]
+      },
+      {
+        "full": "a person quickly paces while looking down.",
+        "full_ko": "사람이 아래를 내려다보며 빠르게 걷는다.",
+        "segments": [
+          {
+            "text": "A person quickly paces while looking down",
+            "text_ko": "아래를 내려다보며 빠르게 걷는 사람"
+          }
+        ]
+      }
+    ]
+  },
+  "M003481": {
+    "captions": [
+      {
+        "full": "a person steps forward and kicks aggressively with their left leg, then quickly squats and jumps.",
+        "full_ko": "사람이 앞으로 나서서 왼쪽 다리로 공격적으로 걷어차고, 재빠르게 웅크리고 점프합니다.",
+        "segments": [
+          {
+            "text": "A person steps forward and kicks aggressively with their left leg",
+            "text_ko": "앞으로 나서서 왼쪽 다리로 공격적으로 차는 사람"
+          },
+          {
+            "text": "A person quickly squats and jumps",
+            "text_ko": "사람이 빠르게 쪼그리고 앉고 점프합니다."
+          }
+        ]
+      },
+      {
+        "full": "a person winds up left arm and does a kick with right leg.",
+        "full_ko": "왼팔을 감아 오른발로 차는 사람.",
+        "segments": [
+          {
+            "text": "A person winds up left arm",
+            "text_ko": "사람이 왼팔을 감는다"
+          },
+          {
+            "text": "A person does a kick with right leg",
+            "text_ko": "오른쪽 다리로 차는 사람"
+          }
+        ]
+      },
+      {
+        "full": "the person kicks their left leg, then jumps up in the air.",
+        "full_ko": "그 사람은 왼쪽 다리를 걷어차고 공중으로 뛰어오릅니다.",
+        "segments": [
+          {
+            "text": "The person kicks their left leg",
+            "text_ko": "그 사람이 왼쪽 다리를 차는군요."
+          },
+          {
+            "text": "The person jumps up in the air",
+            "text_ko": "그 사람이 공중으로 뛰어오른다."
+          }
+        ]
+      }
+    ]
+  },
+  "005197": {
+    "captions": [
+      {
+        "full": "a person lowers their arms to their sides, then stretches them out straight in front of them and parallel to the ground before returning them to their sides.",
+        "full_ko": "사람은 팔을 옆으로 내린 다음 앞으로 곧게 뻗어 땅과 평행하게 한 다음 옆으로 되돌립니다.",
+        "segments": [
+          {
+            "text": "A person lowers their arms to their sides",
+            "text_ko": "사람이 팔을 옆으로 내립니다."
+          },
+          {
+            "text": "A person stretches their arms out straight in front of them and parallel to the ground",
+            "text_ko": "사람이 팔을 앞으로 곧게 뻗어 지면과 평행하게 뻗습니다."
+          },
+          {
+            "text": "A person returns their arms to their sides",
+            "text_ko": "사람이 팔을 옆으로 되돌립니다."
+          }
+        ]
+      },
+      {
+        "full": "the person standing with his arms out wide and then calls them into chest.",
+        "full_ko": "팔을 활짝 벌리고 서 있는 사람이 팔을 가슴 쪽으로 부른다.",
+        "segments": [
+          {
+            "text": "The person stands with his arms out wide",
+            "text_ko": "그 사람은 두 팔을 벌리고 서 있다."
+          },
+          {
+            "text": "The person calls them into chest",
+            "text_ko": "그 사람이 가슴으로 불러요"
+          }
+        ]
+      },
+      {
+        "full": "a man stretches his arms out to the side shoulder length, then brings them in front of him with elbow slightly bent.",
+        "full_ko": "남자는 팔을 어깨 길이만큼 쭉 뻗은 다음 팔꿈치를 약간 구부린 채 앞으로 가져옵니다.",
+        "segments": [
+          {
+            "text": "A man stretches his arms out to the side shoulder length",
+            "text_ko": "남자가 팔을 옆 어깨 길이까지 쭉 뻗는다"
+          },
+          {
+            "text": "A man brings his arms in front of him with elbow slightly bent",
+            "text_ko": "남자는 팔꿈치를 약간 구부린 채 팔을 앞으로 가져옵니다."
+          }
+        ]
+      }
+    ]
+  },
+  "M010499": {
+    "captions": [
+      {
+        "full": "this person steps forward then sits on a stool to brush off his shoe.",
+        "full_ko": "이 사람은 앞으로 나아간 다음 의자에 앉아 신발을 털어냅니다.",
+        "segments": [
+          {
+            "text": "A person steps forward",
+            "text_ko": "사람이 앞으로 나아간다"
+          },
+          {
+            "text": "A person sits on a stool",
+            "text_ko": "한 사람이 의자에 앉아 있다."
+          },
+          {
+            "text": "A person brushes off his shoe",
+            "text_ko": "사람이 신발을 털다"
+          }
+        ]
+      },
+      {
+        "full": "a person puts his hands together and sits down.",
+        "full_ko": "한 사람이 두 손을 모으고 앉는다.",
+        "segments": [
+          {
+            "text": "A person puts his hands together",
+            "text_ko": "한 사람이 두 손을 모으고 있다"
+          },
+          {
+            "text": "A person sits down",
+            "text_ko": "사람이 앉는다"
+          }
+        ]
+      },
+      {
+        "full": "aperson slowly walked forward, adn sit down on somewhere",
+        "full_ko": "한 사람이 천천히 앞으로 걸어가 어딘가에 앉았다.",
+        "segments": [
+          {
+            "text": "A person slowly walks forward",
+            "text_ko": "한 사람이 천천히 앞으로 걸어간다."
+          },
+          {
+            "text": "A person sits down on somewhere",
+            "text_ko": "사람이 어딘가에 앉아 있다"
+          }
+        ]
+      }
+    ]
+  },
+  "M011372": {
+    "captions": []
+  }
+}
