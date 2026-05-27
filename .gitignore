@@ -6,6 +6,10 @@ dataset/
 
 # Logs
 logs/
+log/
+
+# Generation outputs
+generation/
 
 # Python cache
 __pycache__/
