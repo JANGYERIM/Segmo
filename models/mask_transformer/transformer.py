@@ -320,7 +320,10 @@ class MaskTransformer(nn.Module):
             for seg_cond in seg_conds:
                 seg_cond = self.mask_cond(seg_cond, force_mask=force_mask)
                 seg_tokens.append(self.cond_emb(seg_cond).unsqueeze(0))
-            all_cond = torch.cat([cond_token] + seg_tokens, dim=0) #(1+num_seg, b, latent_dim)
+                
+            seg_tokens = torch.cat(seg_tokens, dim=0) #(num_seg, b, latent_dim)
+            seg_tokens = self.position_enc(seg_tokens)
+            all_cond = torch.cat([cond_token, seg_tokens], dim=0) #(1+num_seg, b, latent_dim)
         else:
             all_cond = cond_token
         

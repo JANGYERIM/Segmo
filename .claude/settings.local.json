@@ -6,7 +6,10 @@
       "Read(//etc/**)",
       "Bash(grep -i \"mtrans_v1\\\\b\\\\|MTRANS_V1$\")",
       "Bash(pip install *)",
-      "Bash(grep \"\\\\.py$\")"
+      "Bash(grep \"\\\\.py$\")",
+      "Bash(git -C /data/dpfla3573/code/Segmo show HEAD:run/gen_t2m.py)",
+      "Bash(git -C /data/dpfla3573/code/Segmo show Stage3:run/gen_t2m.py)",
+      "Bash(git push *)"
     ]
   }
 }
