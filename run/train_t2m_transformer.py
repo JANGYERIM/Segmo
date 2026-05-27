@@ -17,9 +17,11 @@ from utils.get_opt import get_opt
 from utils.fixseed import fixseed
 from utils.paramUtil import t2m_kinematic_chain, kit_kinematic_chain
 
-from data.t2m_dataset import Text2MotionDataset
+from data.t2m_dataset import Text2MotionDataset, collate_fn
 from motion_loaders.dataset_motion_loader import get_dataset_motion_loader
 from models.t2m_eval_wrapper import EvaluatorModelWrapper
+
+
 
 
 def plot_t2m(data, save_dir, captions, m_lengths):
@@ -137,11 +139,11 @@ if __name__ == '__main__':
     train_split_file = pjoin(opt.data_root, 'train.txt')
     val_split_file = pjoin(opt.data_root, 'val.txt')
 
-    train_dataset = Text2MotionDataset(opt, mean, std, train_split_file)
+    train_dataset = Text2MotionDataset(opt, mean, std, train_split_file, seg_dir=opt.seg_captions)
     val_dataset = Text2MotionDataset(opt, mean, std, val_split_file)
 
-    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, num_workers=4, shuffle=True, drop_last=True)
-    val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, num_workers=4, shuffle=True, drop_last=True)
+    train_loader = DataLoader(train_dataset, batch_size=opt.batch_size, num_workers=4, shuffle=True, drop_last=True, collate_fn=collate_fn)
+    val_loader = DataLoader(val_dataset, batch_size=opt.batch_size, num_workers=4, shuffle=True, drop_last=True, collate_fn=collate_fn)
 
     eval_val_loader, _ = get_dataset_motion_loader(dataset_opt_path, 32, 'val', device=opt.device)
 

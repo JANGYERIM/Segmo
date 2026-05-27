@@ -46,6 +46,7 @@ dataset/KIT-ML
 # Generated results
 output/
 results/
+generation/
 
 # IDE
 .vscode/

@@ -136,6 +136,15 @@ class MaskTransformer(nn.Module):
         self.output_process = OutputProcess_Bert(out_feats=opt.num_tokens, latent_dim=latent_dim)
 
         self.token_emb = nn.Embedding(_num_tokens, self.code_dim)
+        
+        # motion aggregation
+        # self.seg_aggregator = nn.Sequential(
+        #     nn.Linear(2 * self.code_dim, self.latent_dim),
+        #     #nn.ReLU(),
+        #     #nn.Linear(self.latent_dim, self.latent_dim)
+        # )
+        self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
+        self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
 
         self.apply(self.__init_weights)
 
@@ -207,7 +216,85 @@ class MaskTransformer(nn.Module):
         else:
             return cond
 
-    def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False):
+    def aggregate_motion_segments(self, x0_emb, m_lens, seg_captions):
+        # x0_emb: (b, seqlen, code_dim)
+        # m_lens: (b,) - 유효한 모션 토큰 길이
+        # seg_captions: list of (list or None)
+        # returns: list of (b, latent_dim) tensors, 길이 = max_seg
+        #          or None if seg_captions 없음
+        
+        valid_segs = [s for s in seg_captions if s is not None]
+        if not valid_segs:
+            return None
+        
+        max_seg = max(len(s) for s in valid_segs)
+        b = x0_emb.shape[0]
+        device = x0_emb.device
+        
+        seg_motion_vectors = []
+        for seg_idx in range(max_seg):
+            feats = []
+            for i, (segs, m_len) in enumerate(zip(seg_captions, m_lens)):
+                if segs is not None and seg_idx < len(segs):
+                    n_seg = len(segs)
+                    m_len_i = m_len.item()
+                    si = seg_idx * m_len_i // n_seg
+                    ei = (seg_idx + 1) * m_len_i // n_seg
+                    ei = max(ei, si + 1)
+                    segment_emb = x0_emb[i, si:ei, :]
+                    mean_feat = segment_emb.mean(dim=0)
+                    max_feat = segment_emb.max(dim=0).values
+                    feat = torch.cat([mean_feat, max_feat], dim=-1)
+                else:
+                    feat = torch.zeros(2 * x0_emb.shape[-1], device=device)
+                feats.append(feat)
+
+            feats = torch.stack(feats, dim=0)  # (b, 2*code_dim)
+            mi = self.seg_aggregator(feats)
+            seg_motion_vectors.append(mi)
+        
+        return seg_motion_vectors
+    
+    def compute_align_loss(self, seg_cond_vectors, seg_motion_vectors, seg_valid_masks):
+        max_seg = len(seg_motion_vectors)
+        b = seg_motion_vectors[0].shape[0]
+        device = seg_motion_vectors[0].device
+        
+        #text/motion segmnet -> latent_dim
+        t_vecs = torch.stack([self.cond_emb(seg_cond_vectors[j])for j in range(max_seg)], dim=0) #(max_seg, b, latent_dim)
+        m_vecs = torch.stack(seg_motion_vectors, dim=0) #(max_seg, b, latent_dim)
+        
+        valid = torch.stack(seg_valid_masks, dim=0).float() #(max_seg, b)
+        
+        t_vecs = F.normalize(t_vecs, dim=-1)
+        m_vecs = F.normalize(m_vecs, dim=-1)
+        
+        total_loss = 0.
+        count = 0
+        
+        for i in range(b):
+            valid_mask = valid[:, i].bool()  # (max_seg,)
+            n_valid = valid_mask.sum().item()
+            if n_valid < 2:
+                continue
+            
+            t = t_vecs[valid_mask, i, :] # (A, latent_dim)
+            m = m_vecs[valid_mask, i, :] # (A, latent_dim)
+            
+            sim = torch.matmul(t, m.T) / self.tau
+            labels = torch.arange(n_valid, device=device)
+            
+            L_t2m = F.cross_entropy(sim, labels)
+            L_m2t = F.cross_entropy(sim.T, labels)
+            total_loss += (L_t2m + L_m2t) / 2
+            count += 1
+        
+        if count == 0:
+            return torch.tensor(0., device=device, requires_grad=True)
+
+        return total_loss / count
+    
+    def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None):
         '''
         :param motion_ids: (b, seqlen)
         :padding_mask: (b, seqlen), all pad positions are TRUE else FALSE
@@ -217,6 +304,7 @@ class MaskTransformer(nn.Module):
             -logits: (b, num_token, seqlen)
         '''
 
+        
         cond = self.mask_cond(cond, force_mask=force_mask)
 
         # print(motion_ids.shape)
@@ -225,25 +313,40 @@ class MaskTransformer(nn.Module):
         # (b, seqlen, d) -> (seqlen, b, latent_dim)
         x = self.input_process(x)
 
-        cond = self.cond_emb(cond).unsqueeze(0) #(1, b, latent_dim)
+        cond_token = self.cond_emb(cond).unsqueeze(0) #(1, b, latent_dim)
 
+        if seg_conds is not None:
+            seg_tokens = []
+            for seg_cond in seg_conds:
+                seg_cond = self.mask_cond(seg_cond, force_mask=force_mask)
+                seg_tokens.append(self.cond_emb(seg_cond).unsqueeze(0))
+            all_cond = torch.cat([cond_token] + seg_tokens, dim=0) #(1+num_seg, b, latent_dim)
+        else:
+            all_cond = cond_token
+        
+        n_cond = all_cond.shape[0]
         x = self.position_enc(x)
-        xseq = torch.cat([cond, x], dim=0) #(seqlen+1, b, latent_dim)
+        xseq = torch.cat([all_cond, x], dim=0) #(seqlen+n_cond, b, latent_dim)
 
-        padding_mask = torch.cat([torch.zeros_like(padding_mask[:, 0:1]), padding_mask], dim=1) #(b, seqlen+1)
-        # print(xseq.shape, padding_mask.shape)
+        if seg_valid_masks is not None and len(seg_valid_masks) > 0:
+            # seg_valid_masks: list of (b,) bool, True=valid → invalid은 마스킹
+            seg_invalid = ~torch.stack(seg_valid_masks, dim=1)  # (b, max_seg), True=마스킹
+            global_cond_mask = torch.zeros(padding_mask.shape[0], 1, dtype=torch.bool, device=padding_mask.device)
+            cond_padding = torch.cat([global_cond_mask, seg_invalid], dim=1)  # (b, 1+max_seg)
+        else:
+            cond_padding = torch.zeros(padding_mask.shape[0], n_cond, dtype=torch.bool, device=padding_mask.device)
+        padding_mask = torch.cat([cond_padding, padding_mask], dim=1)  # (b, n_cond+seqlen)
 
-        # print(padding_mask.shape, xseq.shape)
-
-        output = self.seqTransEncoder(xseq, src_key_padding_mask=padding_mask)[1:] #(seqlen, b, e)
+        output = self.seqTransEncoder(xseq, src_key_padding_mask=padding_mask)[n_cond:] #(seqlen, b, e)
         logits = self.output_process(output) #(seqlen, b, e) -> (b, ntoken, seqlen)
         return logits
 
-    def forward(self, ids, y, m_lens):
+    def forward(self, ids, y, m_lens, seg_captions=None):
         '''
         :param ids: (b, n)
         :param y: raw text for cond_mode=text, (b, ) for cond_mode=action
         :m_lens: (b,)
+        :param seg_captions: list of strings for segmental captions
         :return:
         '''
 
@@ -253,11 +356,38 @@ class MaskTransformer(nn.Module):
         # Positions that are PADDED are ALL FALSE
         non_pad_mask = lengths_to_mask(m_lens, ntokens) #(b, n)
         ids = torch.where(non_pad_mask, ids, self.pad_id)
+        
+        #x0_emb = self.token_emb(ids) #(b, seqlen, code_dim), GT token embedding
+        
 
         force_mask = False
+        seg_cond_vectors = None
+        seg_valid_masks = None
         if self.cond_mode == 'text':
             with torch.no_grad():
                 cond_vector = self.encode_text(y)
+                #Encode segment captions
+                if seg_captions is not None:
+                    max_seg = max((len(s) for s in seg_captions if s is not None), default=0)
+                    if max_seg > 0:
+                        seg_cond_vectors = []
+                        seg_valid_masks = []
+                        for seg_idx in range(max_seg):
+                            seg_texts =[]
+                            valid_flags = []
+                            for sample_segs in seg_captions:
+                                if sample_segs is not None and seg_idx < len(sample_segs):
+                                    seg_texts.append(sample_segs[seg_idx])
+                                    valid_flags.append(True)
+                                else:
+                                    seg_texts.append("")
+                                    valid_flags.append(False)
+                            seg_vec = self.encode_text(seg_texts)
+                            valid_mask = torch.tensor(valid_flags, device=device, dtype=torch.float).unsqueeze(1)
+                            seg_vec = seg_vec * valid_mask  # Mask out invalid segment conditions
+                            seg_cond_vectors.append(seg_vec)
+                            seg_valid_masks.append(torch.tensor(valid_flags, device=device, dtype=torch.bool))
+                    
         elif self.cond_mode == 'action':
             cond_vector = self.enc_action(y).to(device).float()
         elif self.cond_mode == 'uncond':
@@ -297,28 +427,51 @@ class MaskTransformer(nn.Module):
         # mask_mid = mask
 
         x_ids = torch.where(mask_mid, self.mask_id, x_ids)
+        
+        logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
+        
+        # 마스킹된 위치: softmax로 soft embedding
+        probs = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
+        codebook = self.token_emb.weight[:self.opt.num_tokens]
+        soft_emb = torch.einsum('bts,td->bsd', probs, codebook)  # (b, seqlen, code_dim)
+         # 마스킹 안 된 위치: GT token embedding
+        gt_emb = self.token_emb(ids)  # (b, seqlen, code_dim)
 
-        logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask)
+        # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
+        x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb, gt_emb)
+    
+        seg_motion_vectors = None
+        if seg_captions is not None:
+            seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
+
         ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
 
-        return ce_loss, pred_id, acc
+        Lalign = torch.tensor(0., device=device)
+        if seg_motion_vectors is not None:
+            Lalign = self.compute_align_loss(seg_cond_vectors, seg_motion_vectors, seg_valid_masks)
+        
+        lambda_align = self.opt.lambda_align
+        total_loss = ce_loss + lambda_align * Lalign
+           
+        return total_loss, pred_id, acc, seg_motion_vectors
 
     def forward_with_cond_scale(self,
                                 motion_ids,
                                 cond_vector,
                                 padding_mask,
                                 cond_scale=3,
-                                force_mask=False):
+                                force_mask=False,
+                                seg_conds=None):
         # bs = motion_ids.shape[0]
         # if cond_scale == 1:
         if force_mask:
-            return self.trans_forward(motion_ids, cond_vector, padding_mask, force_mask=True)
+            return self.trans_forward(motion_ids, cond_vector, padding_mask, force_mask=True,seg_conds=seg_conds)
 
-        logits = self.trans_forward(motion_ids, cond_vector, padding_mask)
+        logits = self.trans_forward(motion_ids, cond_vector, padding_mask, seg_conds=seg_conds)
         if cond_scale == 1:
             return logits
 
-        aux_logits = self.trans_forward(motion_ids, cond_vector, padding_mask, force_mask=True)
+        aux_logits = self.trans_forward(motion_ids, cond_vector, padding_mask, force_mask=True,seg_conds=seg_conds)
 
         scaled_logits = aux_logits + (logits - aux_logits) * cond_scale
         return scaled_logits
@@ -783,12 +936,13 @@ class ResidualTransformer(nn.Module):
 
 
 
-    def trans_forward(self, motion_codes, qids, cond, padding_mask, force_mask=False):
+    def trans_forward(self, motion_codes, qids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None):
         '''
         :param motion_codes: (b, seqlen, d)
         :padding_mask: (b, seqlen), all pad positions are TRUE else FALSE
         :param qids: (b), quantizer layer ids
         :param cond: (b, embed_dim) for text, (b, num_actions) for action
+        :param seg_conds: list of (b, embed_dim) segment condition vectors
         :return:
             -logits: (b, num_token, seqlen)
         '''
@@ -801,13 +955,31 @@ class ResidualTransformer(nn.Module):
         q_onehot = self.encode_quant(qids).float().to(x.device)
 
         q_emb = self.quant_emb(q_onehot).unsqueeze(0)  # (1, b, latent_dim)
-        cond = self.cond_emb(cond).unsqueeze(0)  # (1, b, latent_dim)
+        cond_token = self.cond_emb(cond).unsqueeze(0)  # (1, b, latent_dim)
 
+        if seg_conds is not None:
+            seg_tokens = []
+            for seg_cond in seg_conds:
+                seg_cond = self.mask_cond(seg_cond, force_mask=force_mask)
+                seg_tokens.append(self.cond_emb(seg_cond).unsqueeze(0))
+            all_cond = torch.cat([cond_token] + seg_tokens + [q_emb], dim=0)  # (1+N+1, b, latent_dim)
+        else:
+            all_cond = torch.cat([cond_token, q_emb], dim=0)  # (2, b, latent_dim)
+
+        n_cond = all_cond.shape[0]
         x = self.position_enc(x)
-        xseq = torch.cat([cond, q_emb, x], dim=0)  # (seqlen+2, b, latent_dim)
+        xseq = torch.cat([all_cond, x], dim=0)  # (n_cond+seqlen, b, latent_dim)
 
-        padding_mask = torch.cat([torch.zeros_like(padding_mask[:, 0:2]), padding_mask], dim=1)  # (b, seqlen+2)
-        output = self.seqTransEncoder(xseq, src_key_padding_mask=padding_mask)[2:]  # (seqlen, b, e)
+        if seg_valid_masks is not None and len(seg_valid_masks) > 0:
+            seg_invalid = ~torch.stack(seg_valid_masks, dim=1)  # (b, max_seg), True=마스킹
+            global_cond_mask = torch.zeros(padding_mask.shape[0], 1, dtype=torch.bool, device=padding_mask.device)
+            q_emb_mask = torch.zeros(padding_mask.shape[0], 1, dtype=torch.bool, device=padding_mask.device)
+            cond_padding = torch.cat([global_cond_mask, seg_invalid, q_emb_mask], dim=1)  # (b, 1+max_seg+1)
+        else:
+            cond_padding = torch.zeros(padding_mask.shape[0], n_cond, dtype=torch.bool, device=padding_mask.device)
+        padding_mask = torch.cat([cond_padding, padding_mask], dim=1)  # (b, n_cond+seqlen)
+
+        output = self.seqTransEncoder(xseq, src_key_padding_mask=padding_mask)[n_cond:]  # (seqlen, b, e)
         logits = self.output_process(output)
         return logits
 
@@ -817,31 +989,32 @@ class ResidualTransformer(nn.Module):
                                 cond_vector,
                                 padding_mask,
                                 cond_scale=3,
-                                force_mask=False):
+                                force_mask=False,
+                                seg_conds=None):
         bs = motion_codes.shape[0]
-        # if cond_scale == 1:
         qids = torch.full((bs,), q_id, dtype=torch.long, device=motion_codes.device)
         if force_mask:
-            logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask, force_mask=True)
+            logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask, force_mask=True, seg_conds=seg_conds)
             logits = self.output_project(logits, qids-1)
             return logits
 
-        logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask)
+        logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask, seg_conds=seg_conds)
         logits = self.output_project(logits, qids-1)
         if cond_scale == 1:
             return logits
 
-        aux_logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask, force_mask=True)
+        aux_logits = self.trans_forward(motion_codes, qids, cond_vector, padding_mask, force_mask=True, seg_conds=seg_conds)
         aux_logits = self.output_project(aux_logits, qids-1)
 
         scaled_logits = aux_logits + (logits - aux_logits) * cond_scale
         return scaled_logits
 
-    def forward(self, all_indices, y, m_lens):
+    def forward(self, all_indices, y, m_lens, seg_captions=None):
         '''
         :param all_indices: (b, n, q)
         :param y: raw text for cond_mode=text, (b, ) for cond_mode=action
         :m_lens: (b,)
+        :param seg_captions: list of segment caption lists per sample
         :return:
         '''
 
@@ -859,10 +1032,8 @@ class ResidualTransformer(nn.Module):
         # randomly sample quantization layers to work on, [1, num_q)
         active_q_layers = q_schedule(bs, low=1, high=num_quant_layers, device=device)
 
-        # print(self.token_embed_weight.shape, all_indices.shape)
         token_embed = repeat(self.token_embed_weight, 'q c d-> b c d q', b=bs)
         gather_indices = repeat(all_indices[..., :-1], 'b n q -> b n d q', d=token_embed.shape[2])
-        # print(token_embed.shape, gather_indices.shape)
         all_codes = token_embed.gather(1, gather_indices)  # (b, n, d, q-1)
 
         cumsum_codes = torch.cumsum(all_codes, dim=-1) #(b, n, d, q-1)
@@ -871,9 +1042,31 @@ class ResidualTransformer(nn.Module):
         history_sum = cumsum_codes[torch.arange(bs), :, :, active_q_layers - 1]
 
         force_mask = False
+        seg_cond_vectors = None
+        seg_valid_masks = None
         if self.cond_mode == 'text':
             with torch.no_grad():
                 cond_vector = self.encode_text(y)
+                if seg_captions is not None:
+                    max_seg = max((len(s) for s in seg_captions if s is not None), default=0)
+                    if max_seg > 0:
+                        seg_cond_vectors = []
+                        seg_valid_masks = []
+                        for seg_idx in range(max_seg):
+                            seg_texts = []
+                            valid_flags = []
+                            for sample_segs in seg_captions:
+                                if sample_segs is not None and seg_idx < len(sample_segs):
+                                    seg_texts.append(sample_segs[seg_idx])
+                                    valid_flags.append(True)
+                                else:
+                                    seg_texts.append("")
+                                    valid_flags.append(False)
+                            seg_vec = self.encode_text(seg_texts)
+                            valid_mask = torch.tensor(valid_flags, device=device, dtype=torch.float).unsqueeze(1)
+                            seg_vec = seg_vec * valid_mask
+                            seg_cond_vectors.append(seg_vec)
+                            seg_valid_masks.append(torch.tensor(valid_flags, device=device, dtype=torch.bool))
         elif self.cond_mode == 'action':
             cond_vector = self.enc_action(y).to(device).float()
         elif self.cond_mode == 'uncond':
@@ -882,7 +1075,7 @@ class ResidualTransformer(nn.Module):
         else:
             raise NotImplementedError("Unsupported condition mode!!!")
 
-        logits = self.trans_forward(history_sum, active_q_layers, cond_vector, ~non_pad_mask, force_mask)
+        logits = self.trans_forward(history_sum, active_q_layers, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
         logits = self.output_project(logits, active_q_layers-1)
         ce_loss, pred_id, acc = cal_performance(logits, active_indices, ignore_index=self.pad_id)
 

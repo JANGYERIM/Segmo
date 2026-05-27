@@ -6,9 +6,18 @@ from tqdm import tqdm
 from torch.utils.data._utils.collate import default_collate
 import random
 import codecs as cs
+import json
 
 
 def collate_fn(batch):
+    batch.sort(key=lambda x: x[2], reverse=True)
+    captions, motions, m_lens, seg_captions = zip(*batch)
+    motions = default_collate(list(motions))
+    m_lens = default_collate(list(m_lens))
+    return list(captions), motions, m_lens, list(seg_captions)
+
+
+def collate_fn_eval(batch):
     batch.sort(key=lambda x: x[3], reverse=True)
     return default_collate(batch)
 
@@ -228,13 +237,19 @@ class Text2MotionDatasetEval(data.Dataset):
 
 
 class Text2MotionDataset(data.Dataset):
-    def __init__(self, opt, mean, std, split_file):
+    def __init__(self, opt, mean, std, split_file, seg_dir=None):
         self.opt = opt
         self.max_length = 20
         self.pointer = 0
         self.max_motion_length = opt.max_motion_length
         min_motion_len = 40 if self.opt.dataset_name =='t2m' else 24
 
+        seg_dict = {}
+        if seg_dir:
+            with open(pjoin(seg_dir, 'train.jsonl')) as f:
+                for line in f:
+                    entry = json.loads(line)
+                    seg_dict[entry['id']] = entry['captions']
         data_dict = {}
         id_list = []
         with cs.open(split_file, 'r') as f:
@@ -250,9 +265,12 @@ class Text2MotionDataset(data.Dataset):
                 if (len(motion)) < min_motion_len or (len(motion) >= 200):
                     continue
                 text_data = []
+                seg_data = []
                 flag = False
+                line_idx =0
                 with cs.open(pjoin(opt.text_dir, name + '.txt')) as f:
                     for line in f.readlines():
+                        line_idx += 1
                         text_dict = {}
                         line_split = line.strip().split('#')
                         # print(line)
@@ -268,8 +286,17 @@ class Text2MotionDataset(data.Dataset):
                         if f_tag == 0.0 and to_tag == 0.0:
                             flag = True
                             text_data.append(text_dict)
+                            seg_captions = None
+                            if name in seg_dict and (line_idx-1) < len(seg_dict[name]):
+                                segs = seg_dict[name][line_idx-1]['segments']
+                                seg_captions = segs if len(segs) > 1 else None
+                            seg_data.append(seg_captions)
                         else:
                             try:
+                                seg_captions = None
+                                if name in seg_dict and (line_idx-1) < len(seg_dict[name]):
+                                    segs = seg_dict[name][line_idx-1]['segments']
+                                    seg_captions = segs if len(segs) > 1 else None
                                 n_motion = motion[int(f_tag*20) : int(to_tag*20)]
                                 if (len(n_motion)) < min_motion_len or (len(n_motion) >= 200):
                                     continue
@@ -278,18 +305,21 @@ class Text2MotionDataset(data.Dataset):
                                     new_name = random.choice('ABCDEFGHIJKLMNOPQRSTUVW') + '_' + name
                                 data_dict[new_name] = {'motion': n_motion,
                                                        'length': len(n_motion),
-                                                       'text':[text_dict]}
+                                                       'text':[text_dict],
+                                                       'seg_captions': [seg_captions]}
                                 new_name_list.append(new_name)
                                 length_list.append(len(n_motion))
                             except:
                                 print(line_split)
                                 print(line_split[2], line_split[3], f_tag, to_tag, name)
                                 # break
+                        
 
                 if flag:
                     data_dict[name] = {'motion': motion,
                                        'length': len(motion),
-                                       'text': text_data}
+                                       'text': text_data,
+                                       'seg_captions': seg_data}
                     new_name_list.append(name)
                     length_list.append(len(motion))
             except Exception as e:
@@ -316,19 +346,23 @@ class Text2MotionDataset(data.Dataset):
         data = self.data_dict[self.name_list[idx]]
         motion, m_length, text_list = data['motion'], data['length'], data['text']
         # Randomly select a caption
-        text_data = random.choice(text_list)
+        text_idx = random.randint(0, len(text_list) - 1)
+        text_data = text_list[text_idx]
+        seg_captions = data.get('seg_captions', [None])[text_idx]
         caption, tokens = text_data['caption'], text_data['tokens']
 
-        if self.opt.unit_length < 10:
-            coin2 = np.random.choice(['single', 'single', 'double'])
-        else:
-            coin2 = 'single'
+        # if self.opt.unit_length < 10:
+        #     coin2 = np.random.choice(['single', 'single', 'double'])
+        # else:
+        #     coin2 = 'single'
+        coin2 = 'single'  # 크롭 고정
 
         if coin2 == 'double':
             m_length = (m_length // self.opt.unit_length - 1) * self.opt.unit_length
         elif coin2 == 'single':
             m_length = (m_length // self.opt.unit_length) * self.opt.unit_length
-        idx = random.randint(0, len(motion) - m_length)
+        # idx = random.randint(0, len(motion) - m_length)
+        idx = 0  # 크롭 고정
         motion = motion[idx:idx+m_length]
 
         "Z Normalization"
@@ -340,7 +374,7 @@ class Text2MotionDataset(data.Dataset):
                                      ], axis=0)
         # print(word_embeddings.shape, motion.shape)
         # print(tokens)
-        return caption, motion, m_length
+        return caption, motion, m_length, seg_captions
 
     def reset_min_len(self, length):
         assert length <= self.max_motion_length
