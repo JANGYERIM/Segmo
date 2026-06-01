@@ -322,7 +322,14 @@ class MaskTransformer(nn.Module):
                 seg_tokens.append(self.cond_emb(seg_cond).unsqueeze(0))
                 
             seg_tokens = torch.cat(seg_tokens, dim=0) #(num_seg, b, latent_dim)
-            seg_tokens = seg_tokens + self.position_enc.pe[:seg_tokens.shape[0], :]
+            #test text(positional encoding) 최적화
+            num_seg = seg_tokens.shape[0]
+            m_lens = (~padding_mask).sum(dim=1) #(b,)
+            for i in range(num_seg):
+                midpoints = ((i + 0.5) * m_lens.float() / num_seg).long() #(b,)
+                pe_mid = self.position_enc.pe[midpoints, 0, :] #(b, latent_dim)
+                seg_tokens[i] = seg_tokens[i] + pe_mid
+            #seg_tokens = seg_tokens + self.position_enc.pe[:seg_tokens.shape[0], :]
             all_cond = torch.cat([cond_token, seg_tokens], dim=0) #(1+num_seg, b, latent_dim)
         else:
             all_cond = cond_token
