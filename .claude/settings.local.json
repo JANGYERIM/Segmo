@@ -9,7 +9,8 @@
       "Bash(grep \"\\\\.py$\")",
       "Bash(git -C /data/dpfla3573/code/Segmo show HEAD:run/gen_t2m.py)",
       "Bash(git -C /data/dpfla3573/code/Segmo show Stage3:run/gen_t2m.py)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git -C /data/dpfla3573/code/Segmo diff 1544a25 HEAD -- models/mask_transformer/transformer.py)"
     ]
   }
 }

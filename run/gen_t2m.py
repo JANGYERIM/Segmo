@@ -2,7 +2,9 @@
 Generate motions for 300 random test set samples.
 
 Usage:
-    python run/gen_t2m.py --name MTRANS_V1 --res_name rtrans_V1 --gpu_id 0 --ext sample_300
+    python run/gen_t2m.py --name MTRANS_V1 --res_name rtrans_V1 --gpu_id 0 --ext test_inf
+    
+    PYTHONPATH=/data/dpfla3573/code/Segmo:$PYTHONPATH python run/gen_t2m.py --name t2m_nlayer8_nhead6_ld384_ff1024_cdp0.1_rvq6ns --res_name tres_nlayer8_ld384_ff1024_rvq6ns_cdp0.2_sw --gpu_id 0 --ext test_inf
 """
 
 import os
@@ -34,7 +36,7 @@ from utils.paramUtil import t2m_kinematic_chain
 
 clip_version = 'ViT-B/32'
 DATASET_DIR = '/data4/local_datasets/HumanML3D'
-NUM_SAMPLES = 300
+NUM_SAMPLES = 500
 
 
 # ─── Model loaders ────────────────────────────────────────────────────────────
@@ -140,6 +142,18 @@ def get_token_length(motion_id):
     return None
 
 
+def load_gt_joints(motion_id, token_len):
+    """Load GT motion from new_joint_vecs and recover joints."""
+    for name in [motion_id, 'M' + motion_id]:
+        path = pjoin(DATASET_DIR, 'new_joint_vecs', name + '.npy')
+        if os.path.exists(path):
+            data = np.load(path).astype(np.float32)
+            frames = min(token_len * 4, len(data))
+            joint = recover_from_ric(torch.from_numpy(data[:frames]).float(), 22).numpy()
+            return joint
+    return None
+
+
 # ─── Translation ──────────────────────────────────────────────────────────────
 
 def translate_batch(texts):
@@ -218,6 +232,9 @@ def render_motion(joints, save_path, kinematic_chain, fps=20, radius=4):
 def hstack_videos(video_paths, output_path):
     """Stack videos horizontally side by side using ffmpeg hstack."""
     n = len(video_paths)
+    if n == 1:
+        shutil.copy(video_paths[0], output_path)
+        return
     inputs = sum([['-i', p] for p in video_paths], [])
     filter_complex = f'hstack=inputs={n}[out]'
     subprocess.run(
@@ -236,15 +253,16 @@ def cleanup(paths):
 # ─── Generation helpers ───────────────────────────────────────────────────────
 
 def gen_motions(captions, token_lens, t2m_transformer, res_model, vq_model,
-                opt, inv_transform):
+                opt, inv_transform, gsample=None):
     """Generate and decode motions. Returns (joints_list, token_lens_cpu)."""
+    use_gsample = False  # argmax: gumbel sampling disabled
     with torch.no_grad():
         mids = t2m_transformer.generate(
             captions, token_lens,
             timesteps=opt.time_steps, cond_scale=opt.cond_scale,
             temperature=opt.temperature, topk_filter_thres=opt.topkr,
-            gsample=opt.gumbel_sample)
-        mids = res_model.generate(mids, captions, token_lens, temperature=1, cond_scale=5)
+            gsample=use_gsample)
+        mids = res_model.generate(mids, captions, token_lens, temperature=1e-6, cond_scale=5)
         pred = vq_model.forward_decoder(mids).detach().cpu().numpy()
 
     pred = inv_transform(pred)
@@ -308,81 +326,116 @@ if __name__ == '__main__':
                          model_opt.vq_name, 'meta', 'std.npy'))
     inv_transform = lambda data: data * std + mean
 
-    # ── Sample 300 test IDs ──
-    with open(pjoin(DATASET_DIR, 'test.txt')) as f:
-        all_test_ids = [l.strip() for l in f if l.strip()]
 
-    valid_ids = [mid for mid in all_test_ids if get_token_length(mid) is not None]
-    random.seed(opt.seed)
-    sampled_ids = random.sample(valid_ids, min(NUM_SAMPLES, len(valid_ids)))
-    print(f"Sampled {len(sampled_ids)} / {len(valid_ids)} valid test IDs")
-
+    #-- inferenc (disabled) --
+    inference_caption = ["a person is walking and waving his arm simultaneously."]
+    out_name = "test2"
     kinematic_chain = t2m_kinematic_chain
-    all_json = {}
-    json_path = pjoin(result_dir, 'captions.json')
+    inf_tlens = estimate_token_lens(inference_caption, t2m_transformer, length_estimator, opt.device)
+    inf_joints = gen_motions(inference_caption, inf_tlens, t2m_transformer, res_model, vq_model, opt, inv_transform, gsample=False)
+    temp_videos = []
+    for inf_joint in inf_joints:
+        tmp = tempfile.mktemp(suffix='.mp4')
+        render_motion(inf_joint, tmp, kinematic_chain)
+        temp_videos.append(tmp)
+    out_path = pjoin(result_dir, f'inf{out_name}.mp4')
+    hstack_videos(temp_videos, out_path)
+    cleanup(temp_videos)
+    print(f"Inference saved → {out_path}")
+    
+    
+    #── Sample 500 test IDs ──
+    
 
-    for idx, motion_id in enumerate(sampled_ids):
-        print(f"\n[{idx + 1}/{len(sampled_ids)}] {motion_id}")
-        token_len = get_token_length(motion_id)
-        full_captions = read_full_captions(motion_id)
-        if not full_captions:
-            print("  No captions, skipping")
-            continue
+    # with open(pjoin(DATASET_DIR, 'test.txt')) as f:
+    #     all_test_ids = [l.strip() for l in f if l.strip()]
 
-        json_entry = {"captions": []}
+    # valid_ids = [mid for mid in all_test_ids if get_token_length(mid) is not None]
+    # random.seed(opt.seed)
+    # sampled_ids = random.sample(valid_ids, min(NUM_SAMPLES, len(valid_ids)))
+    # print(f"Sampled {len(sampled_ids)} / {len(valid_ids)} valid test IDs")
 
-        for cap_idx, full_cap in enumerate(full_captions, 1):
-            seg_captions = read_segmented_captions(motion_id, cap_idx)
-            if not seg_captions:
-                print(f"  caption {cap_idx}: no segments, skipping")
-                continue
+    # kinematic_chain = t2m_kinematic_chain
+    # all_json = {}
+    # json_path = pjoin(result_dir, 'captions.json')
 
-            temp_videos = []
+    # for idx, motion_id in enumerate(sampled_ids):
+    #     print(f"\n[{idx + 1}/{len(sampled_ids)}] {motion_id}")
+    #     token_len = get_token_length(motion_id)
+    #     full_captions = read_full_captions(motion_id)
+    #     if not full_captions:
+    #         print("  No captions, skipping")
+    #         continue
 
-            # ── Full caption → real token length ──
-            tlen = torch.LongTensor([token_len]).to(opt.device)
-            [full_joint] = gen_motions([full_cap], tlen,
-                                        t2m_transformer, res_model, vq_model,
-                                        opt, inv_transform)
-            tmp = tempfile.mktemp(suffix='.mp4')
-            render_motion(full_joint, tmp, kinematic_chain)
-            temp_videos.append(tmp)
+    #     json_entry = {"captions": []}
 
-            # ── Segment captions → estimated lengths ──
-            seg_tlens = estimate_token_lens(seg_captions, t2m_transformer,
-                                            length_estimator, opt.device)
-            seg_joints = gen_motions(seg_captions, seg_tlens,
-                                      t2m_transformer, res_model, vq_model,
-                                      opt, inv_transform)
-            for seg_joint in seg_joints:
-                tmp = tempfile.mktemp(suffix='.mp4')
-                render_motion(seg_joint, tmp, kinematic_chain)
-                temp_videos.append(tmp)
+    #     for cap_idx, full_cap in enumerate(full_captions, 1):
+    #         seg_captions = read_segmented_captions(motion_id, cap_idx)
+    #         if len(seg_captions) < 2:
+    #             print(f"  caption {cap_idx}: {len(seg_captions)} segment(s), skipping")
+    #             continue
 
-            # ── Hstack & save video ──
-            out_path = pjoin(result_dir, f'{motion_id}_{cap_idx}.mp4')
-            hstack_videos(temp_videos, out_path)
-            cleanup(temp_videos)
-            print(f"  caption {cap_idx}: saved → {out_path}")
+    #         temp_videos = []
 
-            # ── Translate ──
-            all_texts = [full_cap] + seg_captions
-            translations = translate_batch(all_texts)
+    #         # ── GT (맨 왼쪽) ──
+    #         gt_joint = load_gt_joints(motion_id, token_len)
+    #         if gt_joint is not None:
+    #             gt_rep = np.concatenate([gt_joint] * 3, axis=0)
+    #             tmp = tempfile.mktemp(suffix='.mp4')
+    #             render_motion(gt_rep, tmp, kinematic_chain)
+    #             temp_videos.append(tmp)
 
-            json_entry["captions"].append({
-                "full": full_cap,
-                "full_ko": translations[0],
-                "segments": [
-                    {"text": seg, "text_ko": tr}
-                    for seg, tr in zip(seg_captions, translations[1:])
-                ]
-            })
+    #         # ── Full caption → real token length ──
+    #         tlen = torch.LongTensor([token_len]).to(opt.device)
+    #         [full_joint] = gen_motions([full_cap], tlen,
+    #                                     t2m_transformer, res_model, vq_model,
+    #                                     opt, inv_transform)
+    #         full_rep = np.concatenate([full_joint] * 3, axis=0)
+    #         tmp = tempfile.mktemp(suffix='.mp4')
+    #         render_motion(full_rep, tmp, kinematic_chain)
+    #         temp_videos.append(tmp)
 
-        all_json[motion_id] = json_entry
+    #         # ── Segment captions → estimated lengths ──
+    #         seg_tlens = estimate_token_lens(seg_captions, t2m_transformer,
+    #                                         length_estimator, opt.device)
+    #         seg_joints = gen_motions(seg_captions, seg_tlens,
+    #                                   t2m_transformer, res_model, vq_model,
+    #                                   opt, inv_transform)
+    #         for seg_joint in seg_joints:
+    #             seg_rep = np.concatenate([seg_joint] * 3, axis=0)
+    #             tmp = tempfile.mktemp(suffix='.mp4')
+    #             render_motion(seg_rep, tmp, kinematic_chain)
+    #             temp_videos.append(tmp)
 
-        # Save JSON after each ID (incremental, crash-safe)
-        with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(all_json, f, ensure_ascii=False, indent=2)
+    #         # ── Hstack & save video ──
+    #         out_path = pjoin(result_dir, f'{motion_id}_{cap_idx}.mp4')
+    #         hstack_videos(temp_videos, out_path)
+    #         cleanup(temp_videos)
+    #         print(f"  caption {cap_idx}: saved → {out_path}")
 
-    print(f"\nDone! {len(all_json)} IDs saved to {result_dir}")
-    print(f"Caption JSON: {json_path}")
+    #         # ── Translate ──
+    #         all_texts = [full_cap] + seg_captions
+    #         translations = translate_batch(all_texts)
+
+    #         json_entry["captions"].append({
+    #             f"full{cap_idx}": full_cap,
+    #             f"full{cap_idx}_ko": translations[0],
+    #             "segments": [
+    #                 {"text": seg, "text_ko": tr}
+    #                 for seg, tr in zip(seg_captions, translations[1:])
+    #             ]
+    #         })
+
+    #     all_json[motion_id] = json_entry
+
+    #     # Save JSON after each ID (incremental, crash-safe)
+    #     with open(json_path, 'w', encoding='utf-8') as f:
+    #         json.dump(all_json, f, ensure_ascii=False, indent=2)
+
+    # # ── Sort by motion ID and save final JSON ──
+    # all_json = dict(sorted(all_json.items()))
+    # with open(json_path, 'w', encoding='utf-8') as f:
+    #     json.dump(all_json, f, ensure_ascii=False, indent=2)
+
+    # print(f"\nDone! {len(all_json)} IDs saved to {result_dir}")
+    # print(f"Caption JSON: {json_path}")
