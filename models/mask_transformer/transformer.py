@@ -440,6 +440,9 @@ class MaskTransformer(nn.Module):
         
         logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
         
+        m_logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=None, seg_valid_masks=None)
+        m_loss, _, _ = cal_performance(m_logits, labels, ignore_index=self.mask_id)
+        
         # 마스킹된 위치: softmax로 soft embedding
         probs = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
         codebook = self.token_emb.weight[:self.opt.num_tokens]
@@ -463,7 +466,7 @@ class MaskTransformer(nn.Module):
         lambda_align = self.opt.lambda_align
         total_loss = ce_loss + lambda_align * Lalign
            
-        return total_loss, pred_id, acc, seg_motion_vectors
+        return total_loss, pred_id, acc, seg_motion_vectors, ce_loss, Lalign, m_loss
 
     def forward_with_cond_scale(self,
                                 motion_ids,

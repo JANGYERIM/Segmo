@@ -51,19 +51,25 @@ class MaskTransformerTrainer:
         # self.pred_ids = []
         # self.acc = []
 
-        _loss, _pred_ids, _acc, _seg_motion_vecs = self.t2m_transformer(code_idx[..., 0], conds, m_lens, seg_captions)
+        _loss, _pred_ids, _acc, _seg_motion_vecs, _ce_loss, _lalign, _m_loss = self.t2m_transformer(code_idx[..., 0], conds, m_lens, seg_captions)
 
-        return _loss, _acc
+        return _loss, _acc, _ce_loss, _lalign, _m_loss
 
     def update(self, batch_data):
-        loss, acc = self.forward(batch_data)
+        loss, acc, ce_loss, lalign, m_loss = self.forward(batch_data)
 
         self.opt_t2m_transformer.zero_grad()
-        loss.backward()
+        if ce_loss > m_loss:
+            combined = m_loss + 0.1 * lalign
+        else:
+            margin = (m_loss - ce_loss).detach()
+            dynamic_lambda = 0.1 + margin
+            combined = ce_loss + dynamic_lambda * lalign 
+        combined.backward()
         self.opt_t2m_transformer.step()
         self.scheduler.step()
 
-        return loss.item(), acc
+        return combined.item(), acc, ce_loss.item(), lalign.item(), m_loss.item()
 
     def save(self, file_name, ep, total_it):
         t2m_trans_state_dict = self.t2m_transformer.state_dict()
@@ -134,9 +140,12 @@ class MaskTransformerTrainer:
                 if it < self.opt.warm_up_iter:
                     self.update_lr_warm_up(it, self.opt.warm_up_iter, self.opt.lr)
 
-                loss, acc = self.update(batch_data=batch)
-                logs['loss'] += loss
+                combined, acc, ce_loss, lalign, m_loss = self.update(batch_data=batch)
+                logs['combined'] += combined
                 logs['acc'] += acc
+                logs['ce_loss'] += ce_loss
+                logs['lalign'] += lalign
+                logs['m_loss'] += m_loss
                 logs['lr'] += self.opt_t2m_transformer.param_groups[0]['lr']
 
                 if it % self.opt.log_every == 0:
@@ -163,7 +172,7 @@ class MaskTransformerTrainer:
             val_acc = []
             with torch.no_grad():
                 for i, batch_data in enumerate(val_loader):
-                    loss, acc = self.forward(batch_data)
+                    loss, acc, ce_loss, lalign, m_loss = self.forward(batch_data)
                     val_loss.append(loss.item())
                     val_acc.append(acc)
 
