@@ -55,13 +55,11 @@ class MaskTransformerTrainer:
 
         return _loss, _acc, _ce_loss, _lalign, _m_loss
 
-    def update(self, batch_data, align_only = False):
+    def update(self, batch_data):
         loss, acc, ce_loss, lalign, m_loss = self.forward(batch_data)
 
         self.opt_t2m_transformer.zero_grad()
-        if align_only:
-            combined = lalign
-        elif ce_loss > m_loss:
+        if ce_loss > m_loss:
             combined = m_loss + 0.1 * lalign
         else:
             margin = (m_loss - ce_loss).detach()
@@ -134,7 +132,6 @@ class MaskTransformerTrainer:
         best_acc = 0.
 
         while epoch < self.opt.max_epoch:
-            align_only = (epoch < self.opt.align_warmup_epoch)
             self.t2m_transformer.train()
             self.vq_model.eval()
             
@@ -144,7 +141,7 @@ class MaskTransformerTrainer:
                 if it < self.opt.warm_up_iter:
                     self.update_lr_warm_up(it, self.opt.warm_up_iter, self.opt.lr)
 
-                combined, acc, ce_loss, lalign, m_loss = self.update(batch_data=batch, align_only=align_only)
+                combined, acc, ce_loss, lalign, m_loss = self.update(batch_data=batch)
                 logs['combined'] += combined
                 logs['acc'] += acc
                 logs['ce_loss'] += ce_loss
