@@ -29,7 +29,8 @@ class TrainT2MOptions(BaseOptions):
         self.parser.add_argument('--save_latest', type=int, default=500, help='Frequency of saving checkpoint, (iteration)')
         self.parser.add_argument('--seg_captions', type=str, help='Path to segmented captions directory')
         self.parser.add_argument('--lambda_align', type=float, default=0.5, help='Weight for alignment loss')
-
+        self.parser.add_argument('--align_warmup_epoch', type=int, default=0, help='Epoch to warm up alignment loss')
+        
         self.is_train = True
 
 
