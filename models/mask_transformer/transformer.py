@@ -145,6 +145,7 @@ class MaskTransformer(nn.Module):
         # )
         self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
         self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
+        self.blend_logit = nn.Parameter(torch.tensor(-0.847))  # sigmoid(-0.847) ≈ 0.3 (seg 초기 비율)
 
         self.apply(self.__init_weights)
 
@@ -323,12 +324,12 @@ class MaskTransformer(nn.Module):
                 
             seg_tokens = torch.cat(seg_tokens, dim=0) #(num_seg, b, latent_dim)
             #text positional encoding for segment tokens, based on valid motion length
-            # num_seg = seg_tokens.shape[0]
-            # m_lens = (~padding_mask).sum(dim=1) #(b,)
-            # for i in range(num_seg):
-            #     midpoints = ((i + 0.5) * m_lens.float() / num_seg).long() #(b,)
-            #     pe_mid = self.position_enc.pe[midpoints, 0, :] #(b, latent_dim)
-            #     seg_tokens[i] = seg_tokens[i] + pe_mid
+            num_seg = seg_tokens.shape[0]
+            m_lens = (~padding_mask).sum(dim=1) #(b,)
+            for i in range(num_seg):
+                midpoints = ((i + 0.5) * m_lens.float() / num_seg).long() #(b,)
+                pe_mid = self.position_enc.pe[midpoints, 0, :] #(b, latent_dim)
+                seg_tokens[i] = seg_tokens[i] + pe_mid
             #seg_tokens = seg_tokens + self.position_enc.pe[:seg_tokens.shape[0], :]
             all_cond = torch.cat([cond_token, seg_tokens], dim=0) #(1+num_seg, b, latent_dim)
         else:
@@ -461,7 +462,9 @@ class MaskTransformer(nn.Module):
         probs_seg = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
         soft_emb_seg = torch.einsum('bts,td->bsd', probs_seg, codebook)  # (b, seqlen, code_dim)
         
-        blended_emb = 0.3 * soft_emb_seg + 0.7 * soft_emb_global
+        #blended_emb = 0.3 * soft_emb_seg + 0.7 * soft_emb_global
+        alpha = torch.sigmoid(self.blend_logit)  # seg 비율, (1-alpha) = global 비율
+        blended_emb = alpha * soft_emb_seg + (1 - alpha) * soft_emb_global
         gt_emb = self.token_emb(ids)
         x0_emb = torch.where(mask_mid.unsqueeze(-1), blended_emb, gt_emb)
         

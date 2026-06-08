@@ -7,12 +7,12 @@
 #SBATCH -p batch_grad
 #SBATCH -w ariel-v1
 #SBATCH -t 2-0
-#SBATCH -o /data/dpfla3573/code/Segmo/logs/slurm-%A_eval_MTRANS_V1-4.out
+#SBATCH -o /nas2/data/dpfla3573/code/Segmo/logs/slurm-%A_eval_MTRANS_V1-4.out
 
-cd /data/dpfla3573/code/Segmo
-export PYTHONPATH=/data/dpfla3573/code/Segmo:$PYTHONPATH
+cd /nas2/data/dpfla3573/code/Segmo
+export PYTHONPATH=/nas2/data/dpfla3573/code/Segmo:$PYTHONPATH
 
-/data/dpfla3573/anaconda3/envs/momask/bin/python run/eval_t2m_trans_res.py \
+/nas2/data/dpfla3573/anaconda3/envs/momask/bin/python run/eval_t2m_trans_res.py \
   --name MTRANS_V1-4 \
   --gpu_id 0 \
   --use_res_model \

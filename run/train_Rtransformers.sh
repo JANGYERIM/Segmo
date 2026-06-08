@@ -7,12 +7,12 @@
 #SBATCH -p batch_grad
 #SBATCH -w ariel-v2
 #SBATCH -t 2-0
-#SBATCH -o /data/dpfla3573/code/Segmo/logs/slurm-%A_rtrans_Baseline.out
+#SBATCH -o /nas2/data/dpfla3573/code/Segmo/logs/slurm-%A_rtrans_Baseline.out
 
-cd /data/dpfla3573/code/Segmo
-export PYTHONPATH=/data/dpfla3573/code/Segmo:$PYTHONPATH
+cd /nas2/data/dpfla3573/code/Segmo
+export PYTHONPATH=/nas2/data/dpfla3573/code/Segmo:$PYTHONPATH
 
-/data/dpfla3573/anaconda3/envs/momask/bin/python run/train_res_transformer.py \
+/nas2/data/dpfla3573/anaconda3/envs/momask/bin/python run/train_res_transformer.py \
   --name RTRANS_Baseline \
   --gpu_id 0 \
   --dataset_name t2m \
