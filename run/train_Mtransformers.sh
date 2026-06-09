@@ -17,6 +17,6 @@ export PYTHONPATH=/nas2/data/dpfla3573/code/Segmo:$PYTHONPATH
   --gpu_id 0 \
   --dataset_name t2m \
   --batch_size 64 \
-  --lambda_align 0.5 \
+  --lambda_align 0.1 \
   --seg_captions /data4/local_datasets/HumanML3D/SegmentedCaption \
   --vq_name rvq_nq6_dc512_nc512_noshare_qdp0.2 \

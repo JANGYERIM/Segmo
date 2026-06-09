@@ -138,12 +138,13 @@ class MaskTransformer(nn.Module):
         self.token_emb = nn.Embedding(_num_tokens, self.code_dim)
         
         # motion aggregation
-        # self.seg_aggregator = nn.Sequential(
-        #     nn.Linear(2 * self.code_dim, self.latent_dim),
-        #     #nn.ReLU(),
-        #     #nn.Linear(self.latent_dim, self.latent_dim)
-        # )
-        self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
+        self.seg_aggregator = nn.Sequential(
+            nn.Linear(2 * self.code_dim, self.latent_dim),
+            nn.LayerNorm(self.latent_dim),
+            nn.GELU(),
+            nn.Linear(self.latent_dim, self.latent_dim)
+        )
+        #self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
         self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
         self.blend_logit = nn.Parameter(torch.tensor(-0.847))  # sigmoid(-0.847) ≈ 0.3 (seg 초기 비율)
 
@@ -295,24 +296,24 @@ class MaskTransformer(nn.Module):
 
         return total_loss / count
     
-    def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None):
+    def trans_forward(self, motion_ids, cond, padding_mask, force_mask=False, seg_conds=None, seg_valid_masks=None, precomputed_emb=None):
         '''
-        :param motion_ids: (b, seqlen)
+        :param motion_ids: (b, seqlen), None if precomputed_emb is given
         :padding_mask: (b, seqlen), all pad positions are TRUE else FALSE
         :param cond: (b, embed_dim) for text, (b, num_actions) for action
         :param force_mask: boolean
+        :param precomputed_emb: (b, seqlen, code_dim), if given bypasses token_emb lookup
         :return:
             -logits: (b, num_token, seqlen)
         '''
 
-        
         cond = self.mask_cond(cond, force_mask=force_mask)
 
-        # print(motion_ids.shape)
-        x = self.token_emb(motion_ids)
-        # print(x.shape)
-        # (b, seqlen, d) -> (seqlen, b, latent_dim)
-        x = self.input_process(x)
+        if precomputed_emb is not None:
+            x = self.input_process(precomputed_emb)
+        else:
+            x = self.token_emb(motion_ids)
+            x = self.input_process(x)
 
         cond_token = self.cond_emb(cond).unsqueeze(0) #(1, b, latent_dim)
 
@@ -448,7 +449,7 @@ class MaskTransformer(nn.Module):
         # probs = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
         # codebook = self.token_emb.weight[:self.opt.num_tokens]
         # soft_emb = torch.einsum('bts,td->bsd', probs, codebook)  # (b, seqlen, code_dim)
-        #  # 마스킹 안 된 위치: GT token embedding
+        # # 마스킹 안 된 위치: GT token embedding
         # gt_emb = self.token_emb(ids)  # (b, seqlen, code_dim)
 
         # # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
@@ -474,14 +475,18 @@ class MaskTransformer(nn.Module):
         if seg_captions is not None:
             seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
 
-        blended_logits = torch.einsum('bsd,td->bts', blended_emb, codebook)  # (b, num_tokens, seqlen)
-        #ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
-        ce_loss, pred_id, acc = cal_performance(blended_logits, labels, ignore_index=self.mask_id)
-        
+        # 3rd forward: blended embedding을 입력으로 받아 output_process를 통해 직접 분류
+        refined_logits = self.trans_forward(
+            None, cond_vector, ~non_pad_mask, force_mask,
+            seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks,
+            precomputed_emb=x0_emb
+        )
+        ce_loss, pred_id, acc = cal_performance(refined_logits, labels, ignore_index=self.mask_id)
+
         Lalign = torch.tensor(0., device=device)
         if seg_motion_vectors is not None:
             Lalign = self.compute_align_loss(seg_cond_vectors, seg_motion_vectors, seg_valid_masks)
-        
+
         lambda_align = self.opt.lambda_align
         total_loss = ce_loss + lambda_align * Lalign
            

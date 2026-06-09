@@ -57,8 +57,9 @@ class MaskTransformerTrainer:
 
     def update(self, batch_data):
         loss, acc, ce_loss, lalign, m_loss = self.forward(batch_data)
-        #경쟁 학습
-        # self.opt_t2m_transformer.zero_grad()
+        
+        self.opt_t2m_transformer.zero_grad()
+        # 경쟁 학습
         # if ce_loss > m_loss:
         #     combined = m_loss + 0.1 * lalign
         #     ce_bool = False  # m_loss 선택 (seg가 global보다 나쁨)
@@ -69,9 +70,9 @@ class MaskTransformerTrainer:
         #     ce_bool = True   # ce_loss 선택 (seg가 global보다 좋음)
         # combined.backward()
         
-        loss.backward()        
+        loss.backward()
         ce_bool = True
-        
+
         
         self.opt_t2m_transformer.step()
         self.scheduler.step()
