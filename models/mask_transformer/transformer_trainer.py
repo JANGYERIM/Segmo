@@ -60,18 +60,18 @@ class MaskTransformerTrainer:
         
         self.opt_t2m_transformer.zero_grad()
         # 경쟁 학습
-        # if ce_loss > m_loss:
-        #     combined = m_loss + 0.1 * lalign
-        #     ce_bool = False  # m_loss 선택 (seg가 global보다 나쁨)
-        # else:
-        #     margin = (m_loss - ce_loss).detach()
-        #     dynamic_lambda = 0.1 + margin
-        #     combined = ce_loss + dynamic_lambda * lalign
-        #     ce_bool = True   # ce_loss 선택 (seg가 global보다 좋음)
-        # combined.backward()
+        if ce_loss > m_loss:
+            combined = m_loss + 0.1 * lalign
+            ce_bool = False  #(seg가 global보다 나쁨)
+        else:
+            margin = (m_loss - ce_loss).detach()
+            dynamic_lambda = 0.1 + margin
+            combined = ce_loss + dynamic_lambda * lalign
+            ce_bool = True   #(seg가 global보다 좋음)
+        combined.backward()
         
-        loss.backward()
-        ce_bool = True
+        # loss.backward()
+        # ce_bool = True
 
         
         self.opt_t2m_transformer.step()
@@ -155,6 +155,7 @@ class MaskTransformerTrainer:
                 logs['ce_loss'] += ce_loss
                 logs['lalign'] += lalign
                 logs['m_loss'] += m_loss
+                logs['alpha'] += torch.sigmoid(self.t2m_transformer.blend_logit).item()
                 logs['lr'] += self.opt_t2m_transformer.param_groups[0]['lr']
                 logs['ce_selected'] += int(ce_bool)
 
@@ -166,9 +167,6 @@ class MaskTransformerTrainer:
                         self.logger.add_scalar('Train/%s'%tag, value / self.opt.log_every, it)
                         mean_loss[tag] = value / self.opt.log_every
                     logs = defaultdict(def_value, OrderedDict())
-                    blend_alpha = torch.sigmoid(self.t2m_transformer.blend_logit).item()
-                    self.logger.add_scalar('Train/blend_alpha', blend_alpha, it)
-                    mean_loss['blend_alpha'] = blend_alpha
                     mean_loss['ce_bool'] = bool(mean_loss.pop('ce_selected') > 0.5)
                     print_current_loss(start_time, it, total_iters, mean_loss, epoch=epoch, inner_iter=i)
 

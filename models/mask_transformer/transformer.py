@@ -146,7 +146,7 @@ class MaskTransformer(nn.Module):
         )
         #self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
         self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
-        self.blend_logit = nn.Parameter(torch.tensor(-0.847))  # sigmoid(-0.847) ≈ 0.3 (seg 초기 비율)
+        self.blend_logit = nn.Parameter(torch.tensor(0.0))  # sigmoid(0) = 0.5
 
         self.apply(self.__init_weights)
 
@@ -468,7 +468,11 @@ class MaskTransformer(nn.Module):
         blended_emb = alpha * soft_emb_seg + (1 - alpha) * soft_emb_global
         gt_emb = self.token_emb(ids)
         x0_emb = torch.where(mask_mid.unsqueeze(-1), blended_emb, gt_emb)
+        #x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb_seg, gt_emb)
         
+        blended_logits = torch.einsum('bsd,td->bst', blended_emb, codebook)  # (b, seqlen, num_tokens)
+        #ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
+        ce_loss, pred_id, acc = cal_performance(blended_logits, labels, ignore_index=self.mask_id)
         
     
         seg_motion_vectors = None
@@ -476,12 +480,12 @@ class MaskTransformer(nn.Module):
             seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
 
         # 3rd forward: blended embedding을 입력으로 받아 output_process를 통해 직접 분류
-        refined_logits = self.trans_forward(
-            None, cond_vector, ~non_pad_mask, force_mask,
-            seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks,
-            precomputed_emb=x0_emb
-        )
-        ce_loss, pred_id, acc = cal_performance(refined_logits, labels, ignore_index=self.mask_id)
+        # refined_logits = self.trans_forward(
+        #     None, cond_vector, ~non_pad_mask, force_mask,
+        #     seg_conds=None, seg_valid_masks=None,
+        #     precomputed_emb=x0_emb
+        # )
+        # ce_loss, pred_id, acc = cal_performance(refined_logits, labels, ignore_index=self.mask_id)
 
         Lalign = torch.tensor(0., device=device)
         if seg_motion_vectors is not None:
