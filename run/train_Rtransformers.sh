@@ -6,14 +6,14 @@
 #SBATCH --mem-per-gpu=29G
 #SBATCH -p batch_grad
 #SBATCH -w ariel-v2
-#SBATCH -t 2-0
+#SBATCH -t 4-0
 #SBATCH -o /nas2/data/dpfla3573/code/Segmo/logs/slurm-%A_rtrans_Baseline.out
 
 cd /nas2/data/dpfla3573/code/Segmo
 export PYTHONPATH=/nas2/data/dpfla3573/code/Segmo:$PYTHONPATH
 
 /nas2/data/dpfla3573/anaconda3/envs/momask/bin/python run/train_res_transformer.py \
-  --name RTRANS_Baseline \
+  --name RTRANS_Base \
   --gpu_id 0 \
   --dataset_name t2m \
   --batch_size 64 \

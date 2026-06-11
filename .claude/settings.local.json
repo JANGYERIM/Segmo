@@ -12,7 +12,8 @@
       "Bash(git push *)",
       "Bash(git -C /data/dpfla3573/code/Segmo diff 1544a25 HEAD -- models/mask_transformer/transformer.py)",
       "Bash(ln -sfn /data4/local_datasets/HumanML3D /nas2/data/dpfla3573/code/Segmo/dataset/HumanML3D)",
-      "Bash(awk '{for\\(i=1;i<=NF;i++\\) if\\($i==\"lalign:\"\\) print $\\(i+1\\)}')"
+      "Bash(awk '{for\\(i=1;i<=NF;i++\\) if\\($i==\"lalign:\"\\) print $\\(i+1\\)}')",
+      "Bash(/nas2/data/dpfla3573/anaconda3/envs/momask/bin/python *)"
     ]
   }
 }

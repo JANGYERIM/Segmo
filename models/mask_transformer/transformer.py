@@ -470,7 +470,7 @@ class MaskTransformer(nn.Module):
         x0_emb = torch.where(mask_mid.unsqueeze(-1), blended_emb, gt_emb)
         #x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb_seg, gt_emb)
         
-        blended_logits = torch.einsum('bsd,td->bst', blended_emb, codebook)  # (b, seqlen, num_tokens)
+        blended_logits = torch.einsum('bsd,td->bts', blended_emb, codebook)  # (b, num_tokens, seqlen)
         #ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
         ce_loss, pred_id, acc = cal_performance(blended_logits, labels, ignore_index=self.mask_id)
         
