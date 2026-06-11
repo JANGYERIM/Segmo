@@ -163,3 +163,12 @@ def cal_loss(pred, labels, ignore_index=None, smoothing=0.):
         loss = F.cross_entropy(pred, labels, ignore_index=ignore_index)
 
     return loss
+
+
+def build_periodic_dist(n_tokens, n_segs, device, smoothing=1e-6):
+    dist = torch.full((n_tokens,), smoothing, device=device)
+    tokens_per_seg = n_tokens / n_segs
+    for i in range(n_segs):
+        center = min(int(i * tokens_per_seg + tokens_per_seg /2), n_tokens-1)
+        dist[center] += 1.0
+    return dist / dist.sum()

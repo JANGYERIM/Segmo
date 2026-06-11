@@ -56,28 +56,16 @@ class MaskTransformerTrainer:
         return _loss, _acc, _ce_loss, _lalign, _m_loss
 
     def update(self, batch_data):
-        loss, acc, ce_loss, lalign, m_loss = self.forward(batch_data)
+        loss, acc, seg_loss, lalign, m_loss = self.forward(batch_data)
         
         self.opt_t2m_transformer.zero_grad()
-        # 경쟁 학습
-        if ce_loss > m_loss:
-            combined = m_loss + 0.1 * lalign
-            ce_bool = False  #(seg가 global보다 나쁨)
-        else:
-            margin = (m_loss - ce_loss).detach()
-            dynamic_lambda = 0.1 + margin
-            combined = ce_loss + dynamic_lambda * lalign
-            ce_bool = True   #(seg가 global보다 좋음)
-        combined.backward()
-        
-        # loss.backward()
-        # ce_bool = True
-
+        loss.backward()
+        seg_bool = True
         
         self.opt_t2m_transformer.step()
         self.scheduler.step()
 
-        return loss.item(), acc, ce_loss.item(), lalign.item(), m_loss.item(), ce_bool
+        return loss.item(), acc, seg_loss.item(), lalign.item(), m_loss.item()
 
     def save(self, file_name, ep, total_it):
         t2m_trans_state_dict = self.t2m_transformer.state_dict()
@@ -149,15 +137,13 @@ class MaskTransformerTrainer:
                 if it < self.opt.warm_up_iter:
                     self.update_lr_warm_up(it, self.opt.warm_up_iter, self.opt.lr)
 
-                combined, acc, ce_loss, lalign, m_loss, ce_bool = self.update(batch_data=batch)
+                combined, acc, seg_loss, lalign, m_loss = self.update(batch_data=batch)
                 logs['combined'] += combined
                 logs['acc'] += acc
-                logs['ce_loss'] += ce_loss
+                logs['seg_loss'] += seg_loss
                 logs['lalign'] += lalign
                 logs['m_loss'] += m_loss
-                logs['alpha'] += torch.sigmoid(self.t2m_transformer.blend_logit).item()
                 logs['lr'] += self.opt_t2m_transformer.param_groups[0]['lr']
-                logs['ce_selected'] += int(ce_bool)
 
                 if it % self.opt.log_every == 0:
                     mean_loss = OrderedDict()
@@ -167,7 +153,6 @@ class MaskTransformerTrainer:
                         self.logger.add_scalar('Train/%s'%tag, value / self.opt.log_every, it)
                         mean_loss[tag] = value / self.opt.log_every
                     logs = defaultdict(def_value, OrderedDict())
-                    mean_loss['ce_bool'] = bool(mean_loss.pop('ce_selected') > 0.5)
                     print_current_loss(start_time, it, total_iters, mean_loss, epoch=epoch, inner_iter=i)
 
                 if it % self.opt.save_latest == 0:

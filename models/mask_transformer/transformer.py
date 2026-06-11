@@ -80,7 +80,6 @@ class OutputProcess(nn.Module):
         output = output.permute(1, 2, 0)  # [bs, e, seqlen]
         return output
 
-
 class MaskTransformer(nn.Module):
     def __init__(self, code_dim, cond_mode, latent_dim=256, ff_size=1024, num_layers=8,
                  num_heads=4, dropout=0.1, clip_dim=512, cond_drop_prob=0.1,
@@ -146,7 +145,6 @@ class MaskTransformer(nn.Module):
         )
         #self.seg_aggregator = nn.Linear(2 * self.code_dim, self.latent_dim)
         self.tau = nn.Parameter(torch.ones([]) * 0.07)  # learnable temperature for segment aggregation
-        self.blend_logit = nn.Parameter(torch.tensor(0.0))  # sigmoid(0) = 0.5
 
         self.apply(self.__init_weights)
 
@@ -440,61 +438,84 @@ class MaskTransformer(nn.Module):
 
         x_ids = torch.where(mask_mid, self.mask_id, x_ids)
         
-        logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
+        seg_logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=seg_cond_vectors, seg_valid_masks=seg_valid_masks)
         
         m_logits = self.trans_forward(x_ids, cond_vector, ~non_pad_mask, force_mask, seg_conds=None, seg_valid_masks=None)
         m_loss, _, _ = cal_performance(m_logits, labels, ignore_index=self.mask_id)
         
-        # # 마스킹된 위치: softmax로 soft embedding
-        # probs = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
-        # codebook = self.token_emb.weight[:self.opt.num_tokens]
-        # soft_emb = torch.einsum('bts,td->bsd', probs, codebook)  # (b, seqlen, code_dim)
-        # # 마스킹 안 된 위치: GT token embedding
-        # gt_emb = self.token_emb(ids)  # (b, seqlen, code_dim)
-
-        # # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
-        # x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb, gt_emb)
-    
-        # embedding 보정
+        # 마스킹된 위치: softmax로 soft embedding
+        probs = F.softmax(seg_logits, dim=1)  # (b, num_tokens, seqlen)
         codebook = self.token_emb.weight[:self.opt.num_tokens]
-        probs_global = F.softmax(m_logits, dim=1)  # (b, num_tokens, seqlen)
-        soft_emb_global = torch.einsum('bts,td->bsd', probs_global, codebook)  # (b, seqlen, code_dim)
-        
-        probs_seg = F.softmax(logits, dim=1)  # (b, num_tokens, seqlen)
-        soft_emb_seg = torch.einsum('bts,td->bsd', probs_seg, codebook)  # (b, seqlen, code_dim)
-        
-        #blended_emb = 0.3 * soft_emb_seg + 0.7 * soft_emb_global
-        alpha = torch.sigmoid(self.blend_logit)  # seg 비율, (1-alpha) = global 비율
-        blended_emb = alpha * soft_emb_seg + (1 - alpha) * soft_emb_global
-        gt_emb = self.token_emb(ids)
-        x0_emb = torch.where(mask_mid.unsqueeze(-1), blended_emb, gt_emb)
-        #x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb_seg, gt_emb)
-        
-        blended_logits = torch.einsum('bsd,td->bts', blended_emb, codebook)  # (b, num_tokens, seqlen)
-        #ce_loss, pred_id, acc = cal_performance(logits, labels, ignore_index=self.mask_id)
-        ce_loss, pred_id, acc = cal_performance(blended_logits, labels, ignore_index=self.mask_id)
-        
+        soft_emb = torch.einsum('bts,td->bsd', probs, codebook)  # (b, seqlen, code_dim)
+        # 마스킹 안 된 위치: GT token embedding
+        gt_emb = self.token_emb(ids)  # (b, seqlen, code_dim)
+
+        # mask_mid가 True인 위치는 soft_emb, 아닌 위치는 gt_emb 사용
+        x0_emb = torch.where(mask_mid.unsqueeze(-1), soft_emb, gt_emb)
     
+        seg_loss, pred_id, acc = cal_performance(seg_logits, labels, ignore_index=self.mask_id)
+        
+        #ditribution based loss
+        per_token_seg = F.cross_entropy(seg_logits, labels, ignore_index=self.mask_id, reduction='none')  # (b, seqlen)
+        per_token_m = F.cross_entropy(m_logits, labels, ignore_index=self.mask_id, reduction='none')  # (b, seqlen)
+        per_token_combined = per_token_seg + per_token_m
+        valid_mask = (labels != self.mask_id) # (b, seqlen)
+        
+        with torch.no_grad():
+            B = ids.shape[0]
+            w_seg = torch.ones(B, device=device)
+            w_m = torch.ones(B, device=device)
+            
+            for b in range(per_token_combined.shape[0]):
+                valid = labels[b] != self.mask_id
+                token_losses = per_token_combined[b][valid].cpu().tolist()
+                print(f"[seq {b}] n_masked= {len(token_losses)} losses= {[f'{v:.3f}' for v in token_losses]}")
+            
+            for b in range(B):
+                valid = valid_mask[b]
+                n = valid.sum().item()
+                if n == 0:
+                    continue
+                
+                p = F.softmax(per_token_combined[b][valid], dim = 0)
+                q_uniform = torch.full((n,), 1.0 /n, device=device)
+                n_segs = len(seg_captions[b]) if (seg_captions is not None and seg_captions[b] is not None) else 1
+                q_periodic = build_periodic_dist(n, n_segs, device)
+                
+                #KL(p || q): F.kl_div(q.log(), p) =  sumary of p_i * log(p_i/q_i)
+                kl_u = F.kl_div(q_uniform.log(), p, reduction='sum')
+                kl_p = F.kl_div(q_periodic.log(), p, reduction='sum')
+                denom = kl_u + kl_p + 1e-8
+                w_seg[b] = kl_u / denom
+                w_m[b] = kl_p / denom
+                print(f"[seq {b}] w_seg={w_seg[b].item():.4f}  w_m={w_m[b].item():.4f}")
+        
         seg_motion_vectors = None
         if seg_captions is not None:
             seg_motion_vectors = self.aggregate_motion_segments(x0_emb, m_lens, seg_captions)
 
-        # 3rd forward: blended embedding을 입력으로 받아 output_process를 통해 직접 분류
-        # refined_logits = self.trans_forward(
-        #     None, cond_vector, ~non_pad_mask, force_mask,
-        #     seg_conds=None, seg_valid_masks=None,
-        #     precomputed_emb=x0_emb
-        # )
-        # ce_loss, pred_id, acc = cal_performance(refined_logits, labels, ignore_index=self.mask_id)
 
         Lalign = torch.tensor(0., device=device)
         if seg_motion_vectors is not None:
             Lalign = self.compute_align_loss(seg_cond_vectors, seg_motion_vectors, seg_valid_masks)
 
         lambda_align = self.opt.lambda_align
-        total_loss = ce_loss + lambda_align * Lalign
+        
+        #시퀀스별 평균
+        valid_f = valid_mask.float()
+        counts = valid_f.sum(dim=1).clamp(min=1)  # (b,)
+        per_seq_seg = (per_token_seg * valid_f).sum(dim=1) / counts  # (b,)
+        per_seq_m = (per_token_m * valid_f).sum(dim=1) / counts  # (b,)
+        
+        adaptive_seg_loss = (w_seg * per_seq_seg).mean()
+        adaptive_m_loss = (w_m * per_seq_m).mean()
+        print(f"[batch] adaptive_seg_loss={adaptive_seg_loss.item():.4f}  adaptive_m_loss={adaptive_m_loss.item():.4f}")
+
+        total_loss = adaptive_seg_loss + adaptive_m_loss + lambda_align * Lalign
+        
+        
            
-        return total_loss, pred_id, acc, seg_motion_vectors, ce_loss, Lalign, m_loss
+        return total_loss, pred_id, acc, seg_motion_vectors, seg_loss, Lalign, m_loss
 
     def forward_with_cond_scale(self,
                                 motion_ids,
