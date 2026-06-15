@@ -466,10 +466,6 @@ class MaskTransformer(nn.Module):
             w_seg = torch.ones(B, device=device)
             w_m = torch.ones(B, device=device)
             
-            for b in range(per_token_combined.shape[0]):
-                valid = labels[b] != self.mask_id
-                token_losses = per_token_combined[b][valid].cpu().tolist()
-                print(f"[seq {b}] n_masked= {len(token_losses)} losses= {[f'{v:.3f}' for v in token_losses]}")
             
             for b in range(B):
                 valid = valid_mask[b]
@@ -486,8 +482,8 @@ class MaskTransformer(nn.Module):
                 kl_u = F.kl_div(q_uniform.log(), p, reduction='sum')
                 kl_p = F.kl_div(q_periodic.log(), p, reduction='sum')
                 denom = kl_u + kl_p + 1e-8
-                w_seg[b] = kl_u / denom
-                w_m[b] = kl_p / denom
+                w_seg[b] = 1.0 + kl_u / denom
+                w_m[b] = 1.0 + kl_p / denom
                 print(f"[seq {b}] w_seg={w_seg[b].item():.4f}  w_m={w_m[b].item():.4f}")
         
         seg_motion_vectors = None
@@ -512,8 +508,7 @@ class MaskTransformer(nn.Module):
         print(f"[batch] adaptive_seg_loss={adaptive_seg_loss.item():.4f}  adaptive_m_loss={adaptive_m_loss.item():.4f}")
 
         total_loss = adaptive_seg_loss + adaptive_m_loss + lambda_align * Lalign
-        
-        
+
            
         return total_loss, pred_id, acc, seg_motion_vectors, seg_loss, Lalign, m_loss
 

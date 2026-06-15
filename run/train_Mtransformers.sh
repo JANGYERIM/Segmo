@@ -1,19 +1,19 @@
 #!/usr/bin/bash
 
-#SBATCH -J Segmo_t2m_P2_M_V1-1
+#SBATCH -J Segmo_t2m_P2_M_V1-2
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-gpu=8
 #SBATCH --mem-per-gpu=29G
 #SBATCH -p batch_grad
 #SBATCH -w ariel-v2
 #SBATCH -t 4-0
-#SBATCH -o /nas2/data/dpfla3573/code/Segmo/logs/slurm-%A_t2m_P2_M_V1-1.out
+#SBATCH -o /nas2/data/dpfla3573/code/Segmo/logs/slurm-%A_t2m_P2_M_V1-2.out
 
 cd /nas2/data/dpfla3573/code/Segmo
 export PYTHONPATH=/nas2/data/dpfla3573/code/Segmo:$PYTHONPATH
 
 /nas2/data/dpfla3573/anaconda3/envs/momask/bin/python run/train_t2m_transformer.py \
-  --name t2m_P2_M_V1-1\
+  --name t2m_P2_M_V1-2\
   --gpu_id 0 \
   --dataset_name t2m \
   --batch_size 64 \
