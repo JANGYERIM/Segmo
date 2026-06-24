@@ -471,19 +471,37 @@ class MaskTransformer(nn.Module):
                 valid = valid_mask[b]
                 n = valid.sum().item()
                 if n == 0:
+                    w_seg[b] = 0.0
+                    w_m[b] = 1.0
                     continue
                 
-                p = F.softmax(per_token_combined[b][valid], dim = 0)
-                q_uniform = torch.full((n,), 1.0 /n, device=device)
+                # p = F.softmax(per_token_m[b][valid], dim = 0)
+                # q_uniform = torch.full((n,), 1.0 /n, device=device)
                 n_segs = len(seg_captions[b]) if (seg_captions is not None and seg_captions[b] is not None) else 1
                 q_periodic = build_periodic_dist(n, n_segs, device)
                 
-                #KL(p || q): F.kl_div(q.log(), p) =  sumary of p_i * log(p_i/q_i)
-                kl_u = F.kl_div(q_uniform.log(), p, reduction='sum')
-                kl_p = F.kl_div(q_periodic.log(), p, reduction='sum')
-                denom = kl_u + kl_p + 1e-8
-                w_seg[b] = 1.0 + kl_u / denom
-                w_m[b] = 1.0 + kl_p / denom
+                # #KL(p || q): F.kl_div(q.log(), p) =  sumary of p_i * log(p_i/q_i)
+                # kl_u = F.kl_div(q_uniform.log(), p, reduction='sum')
+                # kl_p = F.kl_div(q_periodic.log(), p, reduction='sum')
+                # denom = kl_u + kl_p + 1e-8
+                # w_seg[b] = kl_u / denom
+                # w_m[b] = kl_p / denom
+                
+                if n<n_segs:
+                    w_seg[b] = 0.0
+                    w_m[b] = 1.0
+                    continue
+                
+                seg_avgs = []
+                for seg_idx in range(n_segs):
+                    si = seg_idx * n//n_segs
+                    ei = (seg_idx +1)*n //n_segs
+                    seg_avgs.append(per_token_combined[b][valid][si:ei].mean())
+                p_seg = F.softmax(torch.stack(seg_avgs),dim=0)
+                q_uniform_seg = torch.full((n_segs,),1.0/n_segs, device=device)
+                kl = F.kl_div(q_uniform_seg.log(), p_seg, reduction='sum')
+                w_seg[b] = kl /(kl + 0.3)
+                w_m[b] = 1 - w_seg[b]
                 print(f"[seq {b}] w_seg={w_seg[b].item():.4f}  w_m={w_m[b].item():.4f}")
         
         seg_motion_vectors = None
